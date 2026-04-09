@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>计数器</title>
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: linear-gradient(160deg, #0f172a, #1d4ed8);
+      font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: white;
+    }
+    .card {
+      width: min(100%, 420px);
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.18);
+      backdrop-filter: blur(16px);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 18px 48px rgba(0,0,0,0.28);
+      text-align: center;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: 28px;
+    }
+    .sub {
+      margin-bottom: 18px;
+      color: #dbeafe;
+      font-size: 14px;
+    }
+    .num {
+      font-size: 72px;
+      font-weight: 900;
+      margin: 16px 0 22px;
+      line-height: 1;
+      word-break: break-all;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    button {
+      border: none;
+      border-radius: 18px;
+      padding: 18px 16px;
+      font-size: 22px;
+      font-weight: 800;
+      color: white;
+      cursor: pointer;
+      transition: transform .08s ease, opacity .2s ease;
+    }
+    button:active { transform: scale(0.97); }
+    .plus { background: linear-gradient(180deg, #22c55e, #16a34a); }
+    .minus { background: linear-gradient(180deg, #f97316, #ea580c); }
+    .reset { background: rgba(255,255,255,0.14); width: 100%; }
+    .small {
+      margin-top: 14px;
+      color: #bfdbfe;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>计数器</h1>
+    <div class="sub">手机可用｜自动保存｜刷新不会丢</div>
+    <div class="num" id="count">0</div>
+    <div class="row">
+      <button class="minus" id="minus">-1</button>
+      <button class="plus" id="plus">+1</button>
+    </div>
+    <button class="reset" id="reset">重置</button>
+    <div class="small">本地保存到你的浏览器里</div>
+  </div>
+
+  <script>
+    const countEl = document.getElementById('count');
+    const plusBtn = document.getElementById('plus');
+    const minusBtn = document.getElementById('minus');
+    const resetBtn = document.getElementById('reset');
+    const KEY = 'simple-counter-value';
+
+    let count = Number(localStorage.getItem(KEY) || 0);
+
+    function render() {
+      countEl.textContent = count;
+      localStorage.setItem(KEY, String(count));
+    }
+
+    plusBtn.addEventListener('click', () => {
+      count += 1;
+      render();
+    });
+
+    minusBtn.addEventListener('click', () => {
+      count -= 1;
+      render();
+    });
+
+    resetBtn.addEventListener('click', () => {
+      count = 0;
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
