@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini Shooter</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: radial-gradient(circle at top, #1b2a4a, #0a0f1d 65%);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .wrap {
+      width: min(96vw, 900px);
+    }
+    .title {
+      text-align: center;
+      margin-bottom: 12px;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+    .tips {
+      text-align: center;
+      color: #bcd1ff;
+      margin-bottom: 14px;
+      font-size: 14px;
+    }
+    canvas {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      display: block;
+      background: linear-gradient(180deg, #09111f 0%, #0d1730 55%, #101826 100%);
+      border: 2px solid #4d76ff;
+      border-radius: 16px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.35);
+    }
+    .footer {
+      margin-top: 12px;
+      text-align: center;
+      color: #90a7da;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">网页射击小游戏</div>
+    <div class="tips">移动：← → 或 A D ｜ 射击：空格 ｜ 重新开始：R</div>
+    <canvas id="game" width="960" height="540"></canvas>
+    <div class="footer">干掉红色敌人，别让它们落到底部。分数越高，刷怪越快。</div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+
+    const keys = {};
+    let bullets = [];
+    let enemies = [];
+    let particles = [];
+    let score = 0;
+    let hp = 5;
+    let gameOver = false;
+    let enemyTimer = 0;
+    let shootCooldown = 0;
+    let lastTime = 0;
+
+    const player = {
+      x: canvas.width / 2,
+      y: canvas.height - 50,
+      w: 42,
+      h: 26,
+      speed: 420,
+    };
+
+    function resetGame() {
+      bullets = [];
+      enemies = [];
+      particles = [];
+      score = 0;
+      hp = 5;
+      gameOver = false;
+      enemyTimer = 0;
+      shootCooldown = 0;
+      player.x = canvas.width / 2;
+    }
+
+    window.addEventListener('keydown', (e) => {
+      keys[e.key.toLowerCase()] = true;
+      if (["ArrowLeft", "ArrowRight", " "].includes(e.key)) e.preventDefault();
+      if (e.key.toLowerCase() === 'r' && gameOver) resetGame();
+    });
+
+    window.addEventListener('keyup', (e) => {
+      keys[e.key.toLowerCase()] = false;
+    });
+
+    function spawnEnemy() {
+      const size = 20 + Math.random() * 22;
+      enemies.push({
+        x: 30 + Math.random() * (canvas.width - 60),
+        y: -size,
+        size,
+        speed: 90 + Math.random() * 80 + score * 1.5,
+      });
+    }
+
+    function shoot() {
+      bullets.push({
+        x: player.x,
+        y: player.y - player.h / 2,
+        r: 4,
+        speed: 560,
+      });
+    }
+
+    function boom(x, y, color) {
+      for (let i = 0; i < 12; i++) {
+        particles.push({
+          x, y,
+          vx: (Math.random() - 0.5) * 220,
+          vy: (Math.random() - 0.5) * 220,
+          life: 0.5 + Math.random() * 0.4,
+          color,
+        });
+      }
+    }
+
+    function update(dt) {
+      if (gameOver) return;
+
+      if (keys['arrowleft'] || keys['a']) player.x -= player.speed * dt;
+      if (keys['arrowright'] || keys['d']) player.x += player.speed * dt;
+      player.x = Math.max(player.w / 2, Math.min(canvas.width - player.w / 2, player.x));
+
+      shootCooldown -= dt;
+      if ((keys[' '] || keys['space']) && shootCooldown <= 0) {
+        shoot();
+        shootCooldown = 0.18;
+      }
+
+      enemyTimer -= dt;
+      const spawnGap = Math.max(0.28, 1 - score * 0.015);
+      if (enemyTimer <= 0) {
+        spawnEnemy();
+        enemyTimer = spawnGap;
+      }
+
+      bullets.forEach(b => b.y -= b.speed * dt);
+      enemies.forEach(e => e.y += e.speed * dt);
+      particles.forEach(p => {
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.life -= dt;
+      });
+
+      bullets = bullets.filter(b => b.y > -20);
+      particles = particles.filter(p => p.life > 0);
+
+      for (let i = enemies.length - 1; i >= 0; i--) {
+        const e = enemies[i];
+
+        if (e.y - e.size > canvas.height) {
+          enemies.splice(i, 1);
+          hp--;
+          if (hp <= 0) gameOver = true;
+          continue;
+        }
+
+        for (let j = bullets.length - 1; j >= 0; j--) {
+          const b = bullets[j];
+          const dx = b.x - e.x;
+          const dy = b.y - e.y;
+          if (Math.hypot(dx, dy) < e.size + b.r) {
+            boom(e.x, e.y, '#ff7b7b');
+            enemies.splice(i, 1);
+            bullets.splice(j, 1);
+            score += 10;
+            break;
+          }
+        }
+
+        const hitPlayer =
+          e.x + e.size > player.x - player.w / 2 &&
+          e.x - e.size < player.x + player.w / 2 &&
+          e.y + e.size > player.y - player.h / 2 &&
+          e.y - e.size < player.y + player.h / 2;
+
+        if (hitPlayer) {
+          boom(player.x, player.y, '#7fd0ff');
+          enemies.splice(i, 1);
+          hp--;
+          if (hp <= 0) gameOver = true;
+        }
+      }
+    }
+
+    function drawStars() {
+      for (let i = 0; i < 50; i++) {
+        const x = (i * 173) % canvas.width;
+        const y = ((i * 97) + performance.now() * 0.02 * (i % 3 + 1)) % canvas.height;
+        ctx.fillStyle = `rgba(255,255,255,${0.2 + (i % 5) * 0.12})`;
+        ctx.fillRect(x, y, 2, 2);
+      }
+    }
+
+    function drawPlayer() {
+      ctx.save();
+      ctx.translate(player.x, player.y);
+      ctx.fillStyle = '#6ec1ff';
+      ctx.beginPath();
+      ctx.moveTo(0, -18);
+      ctx.lineTo(18, 16);
+      ctx.lineTo(0, 8);
+      ctx.lineTo(-18, 16);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#dff4ff';
+      ctx.fillRect(-4, -6, 8, 16);
+      ctx.restore();
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawStars();
+
+      bullets.forEach(b => {
+        ctx.fillStyle = '#ffe082';
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      enemies.forEach(e => {
+        ctx.fillStyle = '#ff5f5f';
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(e.x - e.size / 2, e.y - 3, e.size, 6);
+      });
+
+      particles.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = Math.max(0, p.life);
+        ctx.fillRect(p.x, p.y, 4, 4);
+        ctx.globalAlpha = 1;
+      });
+
+      drawPlayer();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 24px Arial';
+      ctx.fillText(`分数: ${score}`, 20, 36);
+      ctx.fillText(`生命: ${hp}`, 20, 70);
+
+      if (gameOver) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 48px Arial';
+        ctx.fillText('游戏结束', canvas.width / 2, canvas.height / 2 - 20);
+        ctx.font = '24px Arial';
+        ctx.fillText(`最终分数：${score}`, canvas.width / 2, canvas.height / 2 + 24);
+        ctx.fillText('按 R 重新开始', canvas.width / 2, canvas.height / 2 + 64);
+        ctx.textAlign = 'left';
+      }
+    }
+
+    function loop(timestamp) {
+      const dt = Math.min(0.033, (timestamp - lastTime) / 1000 || 0);
+      lastTime = timestamp;
+      update(dt);
+      render();
+      requestAnimationFrame(loop);
+    }
+
+    resetGame();
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
