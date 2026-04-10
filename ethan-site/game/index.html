@@ -283,12 +283,34 @@
     bindHold(shootBtn, 'shooting');
 
     function spawnEnemy() {
-      const size = 20 + Math.random() * 24;
+      const tierRoll = Math.random();
+      let size = 26;
+      let hp = 1;
+      let speed = 130 + Math.random() * 70 + score * 0.7;
+      let canSplit = false;
+      if (tierRoll > 0.82) {
+        size = 42 + Math.random() * 16;
+        hp = 4;
+        speed = 85 + Math.random() * 45 + score * 0.5;
+        canSplit = true;
+      } else if (tierRoll > 0.45) {
+        size = 30 + Math.random() * 12;
+        hp = 2;
+        speed = 110 + Math.random() * 55 + score * 0.6;
+        canSplit = true;
+      } else {
+        size = 22 + Math.random() * 8;
+        hp = 1;
+        speed = 140 + Math.random() * 60 + score * 0.7;
+      }
       enemies.push({
         x: 35 + Math.random() * (canvas.width - 70),
         y: -size,
         size,
-        speed: 130 + Math.random() * 90 + score * 1.3,
+        hp,
+        maxHp: hp,
+        speed,
+        canSplit,
       });
     }
 
@@ -326,7 +348,7 @@
       }
 
       enemyTimer -= dt;
-      const spawnGap = Math.max(0.24, 0.75 - score * 0.008);
+      const spawnGap = Math.max(0.42, 1.05 - score * 0.006);
       if (enemyTimer <= 0) {
         spawnEnemy();
         enemyTimer = spawnGap;
@@ -358,12 +380,31 @@
         for (let j = bullets.length - 1; j >= 0; j--) {
           const b = bullets[j];
           if (Math.hypot(b.x - e.x, b.y - e.y) < e.size + b.r) {
-            boom(e.x, e.y, '#ff8b8b');
-            enemies.splice(i, 1);
             bullets.splice(j, 1);
-            score += 10;
-            playSound('boom');
-            updateHud();
+            e.hp -= 1;
+            if (e.hp <= 0) {
+              boom(e.x, e.y, '#ff8b8b');
+              if (e.canSplit && e.size > 28) {
+                for (let s = 0; s < 2; s++) {
+                  enemies.push({
+                    x: Math.max(22, Math.min(canvas.width - 22, e.x + (s === 0 ? -18 : 18))),
+                    y: e.y,
+                    size: Math.max(16, e.size * 0.48),
+                    hp: 1,
+                    maxHp: 1,
+                    speed: e.speed * 1.2,
+                    canSplit: false,
+                  });
+                }
+              }
+              enemies.splice(i, 1);
+              score += e.maxHp * 10;
+              playSound('boom');
+              updateHud();
+            } else {
+              boom(e.x, e.y, '#ffd4d4');
+              playSound('hit');
+            }
             break;
           }
         }
@@ -425,12 +466,18 @@
       });
 
       enemies.forEach(e => {
-        ctx.fillStyle = '#ff5f5f';
+        ctx.fillStyle = e.maxHp >= 4 ? '#ef4444' : (e.maxHp >= 2 ? '#f87171' : '#ff5f5f');
         ctx.beginPath();
         ctx.arc(e.x, e.y, e.size, 0, Math.PI * 2);
         ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.85)';
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, Math.max(6, e.size * 0.18), 0, Math.PI * 2);
+        ctx.fill();
         ctx.fillStyle = '#fff';
-        ctx.fillRect(e.x - e.size / 2.5, e.y - 4, e.size / 1.25, 8);
+        ctx.fillRect(e.x - e.size / 2, e.y - e.size - 10, e.size, 5);
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(e.x - e.size / 2, e.y - e.size - 10, e.size * (e.hp / e.maxHp), 5);
       });
 
       particles.forEach(p => {
