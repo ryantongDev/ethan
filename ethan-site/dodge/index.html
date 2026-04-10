@@ -152,7 +152,7 @@
     canvas.addEventListener('touchstart', beginDrag, { passive: false });
     canvas.addEventListener('touchmove', moveDrag, { passive: false });
     canvas.addEventListener('touchend', endDrag, { passive: false });
-    restartBtn.addEventListener('click', resetGame);
+    restartBtn.addEventListener('click', (e) => { e.preventDefault(); resetGame(); });
 
     function explode() {
       for (let i = 0; i < 18; i++) particles.push({ x: player.x, y: player.y, vx: (Math.random()-0.5)*260, vy: (Math.random()-0.5)*260, life: 0.9 });

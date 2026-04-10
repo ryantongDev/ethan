@@ -164,7 +164,7 @@
     canvas.addEventListener('touchstart', startDrag, { passive: false });
     canvas.addEventListener('touchmove', moveDrag, { passive: false });
     canvas.addEventListener('touchend', endDrag, { passive: false });
-    restartBtn.addEventListener('click', resetGame);
+    restartBtn.addEventListener('click', (e) => { e.preventDefault(); resetGame(); });
 
     function pop(x, y, color) {
       for (let i = 0; i < 12; i++) particles.push({ x, y, vx: (Math.random()-0.5)*180, vy: (Math.random()-0.5)*180, life: 0.8, color });
