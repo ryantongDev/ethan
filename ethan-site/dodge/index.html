@@ -22,7 +22,7 @@
     .badge { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.18); border-radius: 999px; padding: 8px 12px; font-weight: 700; color: #dbeafe; }
     .title { text-align: center; font-size: 26px; font-weight: 900; margin: 4px 0 6px; }
     .sub { text-align: center; color: #bfdbfe; font-size: 13px; margin-bottom: 12px; }
-    canvas { width: 100%; aspect-ratio: 9/16; display: block; border-radius: 22px; background: linear-gradient(180deg, #020617 0%, #0f172a 100%); border: 2px solid rgba(255,255,255,.35); box-shadow: 0 16px 40px rgba(0,0,0,.28); }
+    canvas { width: 100%; aspect-ratio: 9/16; display: block; border-radius: 22px; background: linear-gradient(180deg, #020617 0%, #111827 45%, #1d4ed8 100%); border: 2px solid rgba(255,255,255,.35); box-shadow: 0 16px 40px rgba(0,0,0,.28); }
     .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
     button, .back { border: none; border-radius: 16px; padding: 14px; font-size: 16px; font-weight: 800; color: #fff; background: rgba(255,255,255,.12); cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; }
   </style>
@@ -209,6 +209,8 @@
         ctx.fillRect((i * 113) % canvas.width, (i * 97 + performance.now() * 0.08 * (i % 4 + 1)) % canvas.height, 2, 8);
       }
       ctx.globalAlpha = 1;
+      ctx.fillStyle = 'rgba(96,165,250,0.08)';
+      ctx.beginPath(); ctx.arc(420, 160, 110, 0, Math.PI * 2); ctx.fill();
       rocks.forEach(drawRock);
       particles.forEach(p => { ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = '#93c5fd'; ctx.fillRect(p.x, p.y, 6, 6); ctx.globalAlpha = 1; });
       ctx.fillStyle = '#60a5fa';

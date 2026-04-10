@@ -65,7 +65,7 @@
       height: auto;
       aspect-ratio: 9 / 16;
       display: block;
-      background: linear-gradient(180deg, #07101d 0%, #0d1730 58%, #111521 100%);
+      background: linear-gradient(180deg, #050b18 0%, #102347 45%, #1e3a8a 72%, #0f172a 100%);
       border: 2px solid #4f78ff;
       border-radius: 18px;
       box-shadow: 0 14px 45px rgba(0,0,0,.4);
@@ -363,6 +363,10 @@
     }
 
     function drawBackground() {
+      ctx.fillStyle = 'rgba(255,255,255,0.06)';
+      ctx.beginPath(); ctx.arc(440, 120, 90, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(147,197,253,0.08)';
+      ctx.fillRect(0, 720, canvas.width, 240);
       for (let i = 0; i < 65; i++) {
         const x = (i * 149) % canvas.width;
         const y = ((i * 113) + performance.now() * 0.05 * ((i % 4) + 1)) % canvas.height;
