@@ -60,6 +60,23 @@
     const attackBtn = document.getElementById('attackBtn');
     const restartBtn = document.getElementById('restart');
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function endJingle(kind) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const seq = kind === 'win' ? [523.25, 659.25, 783.99] : [392, 311.13, 220];
+      const types = kind === 'win' ? ['triangle','triangle','sine'] : ['sawtooth','triangle','sine'];
+      seq.forEach((f, i) => {
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.type = types[i];
+        o.frequency.setValueAtTime(f, audioCtx.currentTime + i * 0.16);
+        g.gain.setValueAtTime(0.001, audioCtx.currentTime + i * 0.16);
+        g.gain.exponentialRampToValueAtTime(0.08, audioCtx.currentTime + i * 0.16 + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.16 + 0.18);
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(audioCtx.currentTime + i * 0.16);
+        o.stop(audioCtx.currentTime + i * 0.16 + 0.2);
+      });
+    }
     const musicBtn = document.getElementById('musicBtn');
     let musicOn = false;
     let musicTimer = null;
@@ -137,7 +154,7 @@
       if (Math.abs(attacker.x - defender.x) < 110) {
         defender.hp -= damage;
         effects.push({ x: defender.x, y: defender.y - 40, text: `-${damage}`, life: 0.5 });
-        if (defender.hp <= 0) { over = true; sound('win'); }
+        if (defender.hp <= 0) { over = true; sound('win'); endJingle(attacker === player ? 'win' : 'lose'); }
       }
       hud();
     }
