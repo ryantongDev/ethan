@@ -58,6 +58,12 @@
     </div>
 
     <div class="panel">
+      <h2>金币与皮肤商店</h2>
+      <div class="grid" id="shopSummary"></div>
+      <div class="grid" id="shop"></div>
+    </div>
+
+    <div class="panel">
       <h2>皮肤系统（已生效主题）</h2>
       <div class="skins" id="skins"></div>
       <div class="sub" style="margin-top:12px;">首页会根据你当前已解锁的最高等级主题自动切换视觉风格。</div>
@@ -76,6 +82,8 @@
     const summary = document.getElementById('summary');
     const badges = document.getElementById('badges');
     const skins = document.getElementById('skins');
+    const shop = document.getElementById('shop');
+    const shopSummary = document.getElementById('shopSummary');
     const tree = document.getElementById('tree');
     function v(key) { return Number(localStorage.getItem(key) || 0); }
     function fmt(item, value) { const num = Number(value || 0); return item.type === 'time' ? `${num.toFixed(1)} 秒` : `${num}`; }
@@ -84,11 +92,15 @@
 
     const scores = { target:v('ethan-target-best'), balloon:v('ethan-balloon-best'), dodge:v('ethan-dodge-best'), relax:v('ethan-relax-best'), counter:v('simple-counter-value') };
     const totalScore = Math.floor(scores.target + scores.balloon + scores.relax + scores.counter / 10 + scores.dodge * 5);
+    let coins = Number(localStorage.getItem('ethan_arcade_coins') || 0);
+    let exchanged = Number(localStorage.getItem('ethan_arcade_exchanged') || 0);
     let title = '新手冒险者';
     if (totalScore >= 1200) title = '传说街机王';
     else if (totalScore >= 700) title = '高级挑战者';
     else if (totalScore >= 300) title = '熟练玩家';
     summary.innerHTML = `<div class="card"><div class="name">总积分</div><div class="score">${totalScore}</div><div class="desc">综合各小游戏成绩折算而来</div></div><div class="card"><div class="name">当前总称号</div><div class="score">${title}</div><div class="desc">继续提升战绩可以升级称号</div></div>`;
+    const canExchange = Math.max(0, Math.floor((totalScore - exchanged) / 100) * 10);
+    shopSummary.innerHTML = `<div class="card"><div class="name">金币</div><div class="score">${coins}</div><div class="desc">可用于购买皮肤</div></div><div class="card"><div class="name">可兑换</div><div class="score">${canExchange}</div><div class="desc">每 100 总分可兑换 10 金币<br><button id="exchangeBtn" style="margin-top:10px;padding:10px 14px;border:none;border-radius:12px;background:#2563eb;color:#fff;font-weight:800;">兑换金币</button></div></div>`;
     const ach = [
       { name:'射靶成长线', now:scores.target, steps:[50,150,300], labels:['新手射手','神射手','传说神射手'] },
       { name:'气球成长线', now:scores.balloon, steps:[60,140,260], labels:['气球杀手','气球统治者','气球终结者'] },
@@ -114,6 +126,14 @@
     if (!unlockedBadges.length) unlockedBadges.push('🌱 初来乍到');
     unlockedBadges.forEach(text => { const el = document.createElement('div'); el.className = 'badge'; el.textContent = text; badges.appendChild(el); });
 
+    const owned = JSON.parse(localStorage.getItem('ethan_arcade_owned_skins') || '[]');
+    const activeSkin = localStorage.getItem('ethan_arcade_active_skin') || 'default';
+    const skinCatalog = [
+      { id:'hunter', name:'蓝色猎手主题', price:20 },
+      { id:'candy', name:'糖果气球主题', price:30 },
+      { id:'space', name:'深空逃生主题', price:40 },
+      { id:'bubble', name:'清凉泡泡主题', price:25 },
+    ];
     const unlockedSkins = [];
     if (scores.target >= 150) unlockedSkins.push('蓝色猎手主题（已生效）');
     if (scores.balloon >= 140) unlockedSkins.push('糖果气球主题');
@@ -121,6 +141,40 @@
     if (scores.relax >= 80) unlockedSkins.push('清凉泡泡主题');
     if (!unlockedSkins.length) unlockedSkins.push('默认主题');
     unlockedSkins.forEach(text => { const el = document.createElement('div'); el.className = 'skin'; el.textContent = text; skins.appendChild(el); });
+
+    skinCatalog.forEach(item => {
+      const ownedFlag = owned.includes(item.id);
+      const using = activeSkin === item.id;
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.innerHTML = `<div class="name">${item.name}</div><div class="score">${item.price} 金币</div><div class="desc">${ownedFlag ? (using ? '当前使用中' : '已拥有') : '未拥有'}</div><button style="margin-top:10px;padding:10px 14px;border:none;border-radius:12px;background:${ownedFlag ? '#16a34a' : '#7c3aed'};color:#fff;font-weight:800;">${ownedFlag ? '使用' : '购买'}</button>`;
+      const btn = el.querySelector('button');
+      btn.addEventListener('click', () => {
+        let coinVal = Number(localStorage.getItem('ethan_arcade_coins') || 0);
+        let own = JSON.parse(localStorage.getItem('ethan_arcade_owned_skins') || '[]');
+        if (!own.includes(item.id)) {
+          if (coinVal < item.price) return alert('金币不够');
+          coinVal -= item.price;
+          own.push(item.id);
+          localStorage.setItem('ethan_arcade_coins', String(coinVal));
+          localStorage.setItem('ethan_arcade_owned_skins', JSON.stringify(own));
+        }
+        localStorage.setItem('ethan_arcade_active_skin', item.id);
+        location.reload();
+      });
+      shop.appendChild(el);
+    });
+
+    setTimeout(() => {
+      const exchangeBtn = document.getElementById('exchangeBtn');
+      if (exchangeBtn) exchangeBtn.addEventListener('click', () => {
+        const can = Math.max(0, Math.floor((totalScore - Number(localStorage.getItem('ethan_arcade_exchanged') || 0)) / 100) * 10);
+        if (can <= 0) return alert('暂时没有可兑换金币');
+        localStorage.setItem('ethan_arcade_coins', String(Number(localStorage.getItem('ethan_arcade_coins') || 0) + can));
+        localStorage.setItem('ethan_arcade_exchanged', String(Number(localStorage.getItem('ethan_arcade_exchanged') || 0) + Math.floor(can / 10) * 100));
+        location.reload();
+      });
+    }, 0);
   </script>
 <script>
     const target = Number(localStorage.getItem('ethan-target-best') || 0);
