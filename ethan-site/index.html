@@ -99,11 +99,14 @@
     const balloon = Number(localStorage.getItem('ethan-balloon-best') || 0);
     const dodge = Number(localStorage.getItem('ethan-dodge-best') || 0);
     const relax = Number(localStorage.getItem('ethan-relax-best') || 0);
-    let theme = 'default';
-    if (target >= 150) theme = 'hunter';
-    else if (balloon >= 140) theme = 'candy';
-    else if (dodge >= 35) theme = 'space';
-    else if (relax >= 80) theme = 'bubble';
+    const activeSkin = localStorage.getItem('ethan_arcade_active_skin') || '';
+    let theme = activeSkin || 'default';
+    if (!activeSkin) {
+      if (target >= 150) theme = 'hunter';
+      else if (balloon >= 140) theme = 'candy';
+      else if (dodge >= 35) theme = 'space';
+      else if (relax >= 80) theme = 'bubble';
+    }
 
     const root = document.documentElement;
     const themeTag = document.getElementById('themeTag');
