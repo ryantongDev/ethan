@@ -71,9 +71,9 @@
     }
     function musicLoop() {
       if (!musicOn) return;
-      const lead = [392, 440, 523.25, 587.33, 523.25, 440, 392, 329.63];
-      const bass = [196, 220, 261.63, 293.66, 261.63, 220, 196, 164.81];
-      lead.forEach((f, i) => setTimeout(() => bgNote(f, 0.26, 'triangle', 0.012), i * 240));
+      const lead = [293.66, 311.13, 349.23, 392, 349.23, 311.13, 293.66, 261.63];
+      const bass = [146.83, 155.56, 174.61, 196, 174.61, 155.56, 146.83, 130.81];
+      lead.forEach((f, i) => setTimeout(() => bgNote(f, 0.26, 'sawtooth', 0.012), i * 240));
       bass.forEach((f, i) => setTimeout(() => bgNote(f, 0.34, 'sine', 0.008), i * 240 + 60));
       musicTimer = setTimeout(musicLoop, 2200);
     }

@@ -171,10 +171,10 @@
     }
     function musicLoop() {
       if (!musicOn) return;
-      const lead = [392, 440, 523.25, 587.33, 523.25, 440, 392, 329.63];
-      const bass = [196, 220, 261.63, 293.66, 261.63, 220, 196, 164.81];
+      const lead = [392, 466.16, 523.25, 587.33, 523.25, 466.16, 392, 349.23];
+      const bass = [196, 233.08, 261.63, 293.66, 261.63, 233.08, 196, 174.61];
       lead.forEach((f, i) => setTimeout(() => bgNote(f, 0.26, 'triangle', 0.012), i * 240));
-      bass.forEach((f, i) => setTimeout(() => bgNote(f, 0.34, 'sine', 0.008), i * 240 + 60));
+      bass.forEach((f, i) => setTimeout(() => bgNote(f, 0.34, 'sawtooth', 0.008), i * 240 + 60));
       musicTimer = setTimeout(musicLoop, 2200);
     }
     function toggleMusic() {
