@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>成就与排行榜</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: radial-gradient(circle at top, #312e81, #0f172a 60%, #020617 100%);
+      color: white;
+      padding: 24px;
+    }
+    .wrap { width: min(1000px, 100%); margin: 0 auto; }
+    .hero, .panel {
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 24px;
+      padding: 22px;
+      margin-bottom: 18px;
+      backdrop-filter: blur(12px);
+    }
+    h1, h2 { margin-top: 0; }
+    .sub { color: #cbd5e1; line-height: 1.7; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 16px; }
+    .card {
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      padding: 16px;
+    }
+    .name { font-size: 18px; font-weight: 900; margin-bottom: 8px; }
+    .score { color: #fde68a; font-size: 24px; font-weight: 900; margin-bottom: 8px; }
+    .desc { color: #cbd5e1; font-size: 14px; line-height: 1.6; }
+    .badges { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    .badge { background: rgba(59,130,246,.18); color: #dbeafe; padding: 8px 12px; border-radius: 999px; font-size: 13px; }
+    .back { display: inline-block; margin-top: 10px; color: #93c5fd; text-decoration: none; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <h1>🏆 成就与排行榜</h1>
+      <div class="sub">这个页面会读取你浏览器本地存下来的成绩，所以不同设备的数据会各自独立。适合做 Ethan 小游戏站的个人战绩页。</div>
+      <a class="back" href="/ethan/">← 返回 Ethan 首页</a>
+    </div>
+
+    <div class="panel">
+      <h2>本地排行榜</h2>
+      <div class="grid" id="board"></div>
+    </div>
+
+    <div class="panel">
+      <h2>已解锁成就</h2>
+      <div class="badges" id="badges"></div>
+    </div>
+  </div>
+
+  <script>
+    const items = [
+      { key: 'simple-counter-value', name: '计数器', type: 'value', desc: '当前计数值' },
+      { key: 'ethan-target-best', name: '射靶', type: 'score', desc: '最高命中得分' },
+      { key: 'ethan-balloon-best', name: '弹弓打气球', type: 'score', desc: '最高打爆分数' },
+      { key: 'ethan-dodge-best', name: '躲避', type: 'time', desc: '最佳存活时间' },
+      { key: 'ethan-relax-best', name: '解压', type: 'score', desc: '累计捏爆泡泡数' },
+    ];
+
+    const board = document.getElementById('board');
+    const badges = document.getElementById('badges');
+
+    function formatValue(item, value) {
+      if (value == null || value === '') return '暂无';
+      const num = Number(value);
+      if (item.type === 'time') return `${num.toFixed(1)} 秒`;
+      return `${num}`;
+    }
+
+    const rows = items.map(item => ({ ...item, raw: localStorage.getItem(item.key) || 0, num: Number(localStorage.getItem(item.key) || 0) }))
+      .sort((a, b) => b.num - a.num);
+
+    rows.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.innerHTML = `<div class="name">${item.name}</div><div class="score">${formatValue(item, item.raw)}</div><div class="desc">${item.desc}</div>`;
+      board.appendChild(el);
+    });
+
+    const unlocked = [];
+    const target = Number(localStorage.getItem('ethan-target-best') || 0);
+    const balloon = Number(localStorage.getItem('ethan-balloon-best') || 0);
+    const dodge = Number(localStorage.getItem('ethan-dodge-best') || 0);
+    const relax = Number(localStorage.getItem('ethan-relax-best') || 0);
+
+    if (target >= 100) unlocked.push('🎯 神射手');
+    if (balloon >= 100) unlocked.push('🎈 气球克星');
+    if (dodge >= 20) unlocked.push('🌀 生存专家');
+    if (relax >= 50) unlocked.push('🫧 解压达人');
+    if (unlocked.length === 0) unlocked.push('🌱 新手上路');
+
+    unlocked.forEach(text => {
+      const el = document.createElement('div');
+      el.className = 'badge';
+      el.textContent = text;
+      badges.appendChild(el);
+    });
+  </script>
+</body>
+</html>
