@@ -13,26 +13,58 @@
     input { width:100%; padding:14px 16px; border-radius:16px; border:none; margin:12px 0; font-size:16px; }
     button { width:100%; padding:14px; border:none; border-radius:16px; background:#2563eb; color:#fff; font-size:16px; font-weight:800; }
     .tip { margin-top:12px; color:#93c5fd; font-size:13px; }
+    .hidden { display:none; }
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>登录 Ethan Arcade</h1>
-    <p>先输入一个玩家名再进入。这样每个人会用自己的本地前缀记录成绩，能尽量避免串号。</p>
+    <h1 id="title">登录 Ethan Arcade</h1>
+    <p id="desc">第一次进入请先设置名字和密码。以后再进就只能输入密码登录。</p>
     <input id="name" placeholder="输入你的名字，例如 Ethan" maxlength="20" />
-    <button id="go">进入游戏站</button>
-    <div class="tip">这是轻量本地登录，不是后端账号系统，但已经能把不同玩家的本地记录分开。</div>
+    <input id="password" type="password" placeholder="设置密码" maxlength="32" />
+    <button id="go">继续</button>
+    <div class="tip">这是浏览器本地密码，不是后端账号系统，但已经能做到首次设置、后续登录。</div>
   </div>
   <script>
-    const input = document.getElementById('name');
+    const nameInput = document.getElementById('name');
+    const pwdInput = document.getElementById('password');
     const btn = document.getElementById('go');
-    const last = localStorage.getItem('ethan_arcade_user') || '';
-    input.value = last;
+    const title = document.getElementById('title');
+    const desc = document.getElementById('desc');
+    const savedName = localStorage.getItem('ethan_arcade_user') || '';
+    const savedPwd = localStorage.getItem('ethan_arcade_password');
+
+    function hash(str) {
+      let h = 0;
+      for (let i = 0; i < str.length; i++) h = (h << 5) - h + str.charCodeAt(i), h |= 0;
+      return String(h);
+    }
+
+    if (savedPwd) {
+      title.textContent = '输入密码登录';
+      desc.textContent = `当前账号：${savedName || '未命名玩家'}，请输入密码继续。`;
+      nameInput.classList.add('hidden');
+      pwdInput.placeholder = '输入密码';
+    } else {
+      nameInput.value = savedName;
+    }
+
     btn.addEventListener('click', () => {
-      const name = input.value.trim();
-      if (!name) return alert('先输入名字');
-      localStorage.setItem('ethan_arcade_user', name);
-      location.href = '/ethan/';
+      const pwd = pwdInput.value.trim();
+      if (!pwd) return alert('请输入密码');
+
+      if (!savedPwd) {
+        const name = nameInput.value.trim();
+        if (!name) return alert('先输入名字');
+        localStorage.setItem('ethan_arcade_user', name);
+        localStorage.setItem('ethan_arcade_password', hash(pwd));
+        localStorage.setItem('ethan_arcade_authed', '1');
+        location.href = '/ethan/';
+      } else {
+        if (hash(pwd) !== savedPwd) return alert('密码不对');
+        localStorage.setItem('ethan_arcade_authed', '1');
+        location.href = '/ethan/';
+      }
     });
   </script>
 </body>

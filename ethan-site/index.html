@@ -56,7 +56,8 @@
 <body>
   <script>
     const currentUser = localStorage.getItem('ethan_arcade_user');
-    if (!currentUser) location.replace('/ethan/auth/login.html');
+    const authed = localStorage.getItem('ethan_arcade_authed') === '1';
+    if (!currentUser || !authed) location.replace('/ethan/auth/login.html');
   </script>
   <div class="wrap">
     <div class="hero">
