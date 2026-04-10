@@ -80,6 +80,11 @@
     const musicBtn = document.getElementById('musicBtn');
     let musicOn = false;
     let musicTimer = null;
+    function stopMusic() {
+      musicOn = false;
+      if (musicBtn) musicBtn.textContent = '音乐：关';
+      if (musicTimer) { clearTimeout(musicTimer); musicTimer = null; }
+    }
     function bgNote(freq = 440, dur = 0.18, type = 'sine', gainValue = 0.014) {
       if (audioCtx.state === 'suspended') audioCtx.resume();
       const o = audioCtx.createOscillator();
@@ -154,7 +159,7 @@
       if (Math.abs(attacker.x - defender.x) < 110) {
         defender.hp -= damage;
         effects.push({ x: defender.x, y: defender.y - 40, text: `-${damage}`, life: 0.5 });
-        if (defender.hp <= 0) { over = true; sound('win'); endJingle(attacker === player ? 'win' : 'lose'); }
+        if (defender.hp <= 0) { over = true; stopMusic(); sound('win'); endJingle(attacker === player ? 'win' : 'lose'); }
       }
       hud();
     }

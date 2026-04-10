@@ -174,6 +174,11 @@
     const musicBtn = document.getElementById('musicBtn');
     let musicOn = false;
     let musicTimer = null;
+    function stopMusic() {
+      musicOn = false;
+      if (musicBtn) musicBtn.textContent = '音乐：关';
+      if (musicTimer) { clearTimeout(musicTimer); musicTimer = null; }
+    }
     function bgNote(freq = 440, dur = 0.18, type = 'sine', gainValue = 0.014) {
       if (audioCtx.state === 'suspended') audioCtx.resume();
       const o = audioCtx.createOscillator();
@@ -346,7 +351,7 @@
           hp--;
           playSound('hit');
           updateHud();
-          if (hp <= 0) { gameOver = true; endJingle(score >= 100 ? 'win' : 'lose'); }
+          if (hp <= 0) { gameOver = true; stopMusic(); endJingle(score >= 100 ? 'win' : 'lose'); }
           continue;
         }
 
@@ -374,7 +379,7 @@
           enemies.splice(i, 1);
           hp--;
           updateHud();
-          if (hp <= 0) { gameOver = true; endJingle(score >= 100 ? 'win' : 'lose'); }
+          if (hp <= 0) { gameOver = true; stopMusic(); endJingle(score >= 100 ? 'win' : 'lose'); }
         }
       }
     }
