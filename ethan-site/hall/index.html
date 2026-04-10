@@ -6,46 +6,26 @@
   <title>成就树与徽章大厅</title>
   <style>
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
-      background: radial-gradient(circle at top, #312e81, #0f172a 60%, #020617 100%);
-      color: white;
-      padding: 24px;
+    :root {
+      --bg1:#312e81; --bg2:#0f172a; --bg3:#020617; --panel:rgba(255,255,255,.08); --border:rgba(255,255,255,.12); --text:#cbd5e1;
     }
+    body { margin: 0; min-height: 100vh; font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif; background: radial-gradient(circle at top, var(--bg1), var(--bg2) 60%, var(--bg3) 100%); color: white; padding: 24px; }
     .wrap { width: min(1100px, 100%); margin: 0 auto; }
-    .hero, .panel {
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 24px;
-      padding: 22px;
-      margin-bottom: 18px;
-      backdrop-filter: blur(12px);
-    }
+    .hero, .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 24px; padding: 22px; margin-bottom: 18px; backdrop-filter: blur(12px); }
     h1, h2 { margin-top: 0; }
-    .sub { color: #cbd5e1; line-height: 1.7; }
+    .sub { color: var(--text); line-height: 1.7; }
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 16px; }
-    .card {
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 18px;
-      padding: 16px;
-    }
+    .card { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: 18px; padding: 16px; }
     .name { font-size: 18px; font-weight: 900; margin-bottom: 8px; }
     .score { color: #fde68a; font-size: 24px; font-weight: 900; margin-bottom: 8px; }
-    .desc { color: #cbd5e1; font-size: 14px; line-height: 1.6; }
+    .desc { color: var(--text); font-size: 14px; line-height: 1.6; }
     .badges, .skins { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
     .badge, .skin { background: rgba(59,130,246,.18); color: #dbeafe; padding: 8px 12px; border-radius: 999px; font-size: 13px; }
     .tree { display: grid; gap: 12px; margin-top: 14px; }
-    .node {
-      padding: 14px 16px;
-      border-radius: 18px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.1);
-    }
+    .node { padding: 14px 16px; border-radius: 18px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); }
     .node strong { display: block; margin-bottom: 6px; }
     .locked { opacity: .45; }
+    .progress { margin-top: 8px; font-size: 13px; color: #bfdbfe; }
     .back { display: inline-block; margin-top: 10px; color: #93c5fd; text-decoration: none; font-weight: 700; }
   </style>
 </head>
@@ -63,7 +43,7 @@
     </div>
 
     <div class="panel">
-      <h2>成就树</h2>
+      <h2>成就树（进阶版）</h2>
       <div class="tree" id="tree"></div>
     </div>
 
@@ -73,9 +53,9 @@
     </div>
 
     <div class="panel">
-      <h2>皮肤系统（当前解锁）</h2>
+      <h2>皮肤系统（已生效主题）</h2>
       <div class="skins" id="skins"></div>
-      <div class="sub" style="margin-top:12px;">目前先做成解锁展示，下一步可以把主题真正应用到首页和卡片配色。</div>
+      <div class="sub" style="margin-top:12px;">首页会根据你当前已解锁的最高等级主题自动切换视觉风格。</div>
     </div>
   </div>
 
@@ -87,78 +67,48 @@
       { key: 'ethan-dodge-best', name: '躲避', type: 'time', desc: '最佳存活时间' },
       { key: 'ethan-relax-best', name: '解压', type: 'score', desc: '累计捏爆泡泡数' },
     ];
-
     const board = document.getElementById('board');
     const badges = document.getElementById('badges');
     const skins = document.getElementById('skins');
     const tree = document.getElementById('tree');
-
     function v(key) { return Number(localStorage.getItem(key) || 0); }
-    function formatValue(item, value) {
-      const num = Number(value || 0);
-      if (item.type === 'time') return `${num.toFixed(1)} 秒`;
-      return `${num}`;
-    }
-
+    function fmt(item, value) { const num = Number(value || 0); return item.type === 'time' ? `${num.toFixed(1)} 秒` : `${num}`; }
     const rows = items.map(item => ({ ...item, raw: v(item.key), num: v(item.key) })).sort((a, b) => b.num - a.num);
-    rows.forEach(item => {
-      const el = document.createElement('div');
-      el.className = 'card';
-      el.innerHTML = `<div class="name">${item.name}</div><div class="score">${formatValue(item, item.raw)}</div><div class="desc">${item.desc}</div>`;
-      board.appendChild(el);
-    });
+    rows.forEach(item => { const el = document.createElement('div'); el.className = 'card'; el.innerHTML = `<div class="name">${item.name}</div><div class="score">${fmt(item, item.raw)}</div><div class="desc">${item.desc}</div>`; board.appendChild(el); });
 
-    const target = v('ethan-target-best');
-    const balloon = v('ethan-balloon-best');
-    const dodge = v('ethan-dodge-best');
-    const relax = v('ethan-relax-best');
-    const counter = v('simple-counter-value');
-
-    const achievements = [
-      { name: '新手射手', ok: target >= 50, desc: '射靶达到 50 分' },
-      { name: '神射手', ok: target >= 150, desc: '射靶达到 150 分' },
-      { name: '气球杀手', ok: balloon >= 60, desc: '弹弓打气球达到 60 分' },
-      { name: '气球统治者', ok: balloon >= 140, desc: '弹弓打气球达到 140 分' },
-      { name: '生存者', ok: dodge >= 15, desc: '躲避存活超过 15 秒' },
-      { name: '生存大师', ok: dodge >= 35, desc: '躲避存活超过 35 秒' },
-      { name: '解压学徒', ok: relax >= 30, desc: '捏爆 30 个泡泡' },
-      { name: '解压之王', ok: relax >= 80, desc: '捏爆 80 个泡泡' },
-      { name: '数字狂人', ok: counter >= 100, desc: '计数器累到 100' },
+    const scores = { target:v('ethan-target-best'), balloon:v('ethan-balloon-best'), dodge:v('ethan-dodge-best'), relax:v('ethan-relax-best'), counter:v('simple-counter-value') };
+    const ach = [
+      { name:'射靶成长线', now:scores.target, steps:[50,150,300], labels:['新手射手','神射手','传说神射手'] },
+      { name:'气球成长线', now:scores.balloon, steps:[60,140,260], labels:['气球杀手','气球统治者','气球终结者'] },
+      { name:'生存成长线', now:scores.dodge, steps:[15,35,60], labels:['生存者','生存大师','极限幸存者'] },
+      { name:'解压成长线', now:scores.relax, steps:[30,80,160], labels:['解压学徒','解压之王','泡泡毁灭者'] },
+      { name:'数值成长线', now:scores.counter, steps:[100,300,1000], labels:['数字狂人','数值掌控者','数字支配者'] },
     ];
-
-    achievements.forEach(item => {
+    ach.forEach(line => {
+      const unlocked = line.steps.filter(s => line.now >= s).length;
+      const nextStep = line.steps[unlocked] || line.steps[line.steps.length - 1];
       const el = document.createElement('div');
-      el.className = 'node' + (item.ok ? '' : ' locked');
-      el.innerHTML = `<strong>${item.ok ? '✅' : '🔒'} ${item.name}</strong><div>${item.desc}</div>`;
+      el.className = 'node' + (unlocked ? '' : ' locked');
+      el.innerHTML = `<strong>${unlocked ? '✅' : '🔒'} ${line.name}</strong><div>${line.labels.map((n,i)=> `${line.now >= line.steps[i] ? '✔' : '○'} ${n}`).join('　')}</div><div class="progress">当前：${line.now} ｜ 下一档：${nextStep}</div>`;
       tree.appendChild(el);
     });
 
     const unlockedBadges = [];
-    if (target >= 150) unlockedBadges.push('🎯 传奇射手');
-    if (balloon >= 140) unlockedBadges.push('🎈 爆破达人');
-    if (dodge >= 35) unlockedBadges.push('🌀 极限幸存者');
-    if (relax >= 80) unlockedBadges.push('🫧 泡泡毁灭者');
-    if (counter >= 100) unlockedBadges.push('🔢 数值掌控者');
-    if (unlockedBadges.length === 0) unlockedBadges.push('🌱 初来乍到');
-    unlockedBadges.forEach(text => {
-      const el = document.createElement('div');
-      el.className = 'badge';
-      el.textContent = text;
-      badges.appendChild(el);
-    });
+    if (scores.target >= 150) unlockedBadges.push('🎯 传奇射手');
+    if (scores.balloon >= 140) unlockedBadges.push('🎈 爆破达人');
+    if (scores.dodge >= 35) unlockedBadges.push('🌀 极限幸存者');
+    if (scores.relax >= 80) unlockedBadges.push('🫧 泡泡毁灭者');
+    if (scores.counter >= 300) unlockedBadges.push('🔢 数值掌控者');
+    if (!unlockedBadges.length) unlockedBadges.push('🌱 初来乍到');
+    unlockedBadges.forEach(text => { const el = document.createElement('div'); el.className = 'badge'; el.textContent = text; badges.appendChild(el); });
 
     const unlockedSkins = [];
-    if (target >= 50) unlockedSkins.push('蓝色猎手主题');
-    if (balloon >= 60) unlockedSkins.push('糖果气球主题');
-    if (dodge >= 15) unlockedSkins.push('深空逃生主题');
-    if (relax >= 30) unlockedSkins.push('清凉泡泡主题');
-    if (unlockedSkins.length === 0) unlockedSkins.push('默认主题');
-    unlockedSkins.forEach(text => {
-      const el = document.createElement('div');
-      el.className = 'skin';
-      el.textContent = text;
-      skins.appendChild(el);
-    });
+    if (scores.target >= 150) unlockedSkins.push('蓝色猎手主题（已生效）');
+    if (scores.balloon >= 140) unlockedSkins.push('糖果气球主题');
+    if (scores.dodge >= 35) unlockedSkins.push('深空逃生主题');
+    if (scores.relax >= 80) unlockedSkins.push('清凉泡泡主题');
+    if (!unlockedSkins.length) unlockedSkins.push('默认主题');
+    unlockedSkins.forEach(text => { const el = document.createElement('div'); el.className = 'skin'; el.textContent = text; skins.appendChild(el); });
   </script>
 </body>
 </html>

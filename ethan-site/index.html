@@ -6,77 +6,48 @@
   <title>Ethan 小游戏站</title>
   <style>
     * { box-sizing: border-box; }
+    :root {
+      --bg1: #1e3a8a;
+      --bg2: #0f172a;
+      --bg3: #020617;
+      --card: rgba(255,255,255,.12);
+      --card-border: rgba(255,255,255,.12);
+      --text-soft: #cbd5e1;
+      --tag-bg: rgba(96,165,250,.18);
+      --tag-text: #bfdbfe;
+    }
     body {
       margin: 0;
       min-height: 100vh;
       font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
-      background: radial-gradient(circle at top, #1e3a8a, #0f172a 58%, #020617 100%);
+      background: radial-gradient(circle at top, var(--bg1), var(--bg2) 58%, var(--bg3) 100%);
       color: white;
       padding: 24px;
     }
     .wrap { width: min(1100px, 100%); margin: 0 auto; }
     .hero {
       background: linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.06));
-      border: 1px solid rgba(255,255,255,.15);
+      border: 1px solid var(--card-border);
       border-radius: 28px;
       padding: 28px;
       box-shadow: 0 20px 50px rgba(0,0,0,.28);
       backdrop-filter: blur(14px);
       margin-bottom: 18px;
     }
-    .tag {
-      display: inline-block;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(96,165,250,.18);
-      color: #bfdbfe;
-      font-weight: 700;
-      font-size: 13px;
-      margin-bottom: 12px;
-    }
+    .tag { display: inline-block; padding: 8px 12px; border-radius: 999px; background: var(--tag-bg); color: var(--tag-text); font-weight: 700; font-size: 13px; margin-bottom: 12px; }
     h1 { margin: 0 0 10px; font-size: clamp(30px, 4vw, 52px); }
-    .desc { color: #cbd5e1; font-size: 16px; line-height: 1.7; max-width: 760px; }
+    .desc { color: var(--text-soft); font-size: 16px; line-height: 1.7; max-width: 760px; }
     .stats { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
-    .stat {
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 18px;
-      padding: 12px 16px;
-      color: #e2e8f0;
-      font-weight: 700;
-    }
-    .panel {
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 24px;
-      padding: 20px;
-      margin-bottom: 18px;
-    }
+    .stat { background: rgba(255,255,255,.08); border: 1px solid var(--card-border); border-radius: 18px; padding: 12px 16px; color: #e2e8f0; font-weight: 700; }
+    .panel { background: rgba(255,255,255,.08); border: 1px solid var(--card-border); border-radius: 24px; padding: 20px; margin-bottom: 18px; }
     .panel h2 { margin: 0 0 10px; font-size: 22px; }
-    .panel p { margin: 0; color: #cbd5e1; line-height: 1.7; }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
-      margin-top: 18px;
-    }
-    .card {
-      text-decoration: none;
-      color: white;
-      background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.07));
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 22px;
-      padding: 18px;
-      min-height: 160px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: transform .15s ease, border-color .15s ease;
-    }
+    .panel p { margin: 0; color: var(--text-soft); line-height: 1.7; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 18px; }
+    .card { text-decoration: none; color: white; background: linear-gradient(180deg, var(--card), rgba(255,255,255,.07)); border: 1px solid var(--card-border); border-radius: 22px; padding: 18px; min-height: 160px; display: flex; flex-direction: column; justify-content: space-between; transition: transform .15s ease, border-color .15s ease; }
     .card:hover { transform: translateY(-4px); border-color: rgba(147,197,253,.5); }
     .emoji { font-size: 30px; margin-bottom: 10px; }
     .title { font-size: 20px; font-weight: 900; margin-bottom: 8px; }
-    .meta { color: #cbd5e1; line-height: 1.6; font-size: 14px; }
+    .meta { color: var(--text-soft); line-height: 1.6; font-size: 14px; }
     .foot { margin-top: 12px; color: #93c5fd; font-weight: 700; }
     .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
     .mini-badge { font-size: 12px; color: #dbeafe; background: rgba(59,130,246,.18); padding: 6px 10px; border-radius: 999px; }
@@ -85,9 +56,9 @@
 <body>
   <div class="wrap">
     <div class="hero">
-      <div class="tag">ETHAN ARCADE</div>
+      <div class="tag" id="themeTag">ETHAN ARCADE</div>
       <h1>Ethan 小游戏站</h1>
-      <div class="desc">这里是独立挂在 <b>/ethan/</b> 下的小型游戏站，和主项目隔离。现在已经能玩射击、射靶、弹弓、躲避、打架、解压这些小游戏，还加了音效和背景音乐开关。</div>
+      <div class="desc">这里是独立挂在 <b>/ethan/</b> 下的小型游戏站，和主项目隔离。现在已经能玩射击、射靶、弹弓、躲避、打架、解压这些小游戏，还加了音效、背景音乐和成就系统。</div>
       <div class="stats">
         <div class="stat">🎮 游戏数量：7</div>
         <div class="stat">🔊 音效：已开启</div>
@@ -97,7 +68,7 @@
 
     <div class="panel">
       <h2>成就树与皮肤系统</h2>
-      <p>现在已经有统一的成就树、徽章大厅和皮肤解锁展示页，可以集中看战绩和已解锁内容。</p>
+      <p>现在已经有统一的成就树、徽章大厅和皮肤解锁展示页。首页会根据你已解锁的主题自动切换风格。</p>
       <div class="badge-row">
         <div class="mini-badge">本地成绩已启用</div>
         <div class="mini-badge">主项目隔离</div>
@@ -116,5 +87,37 @@
       <a class="card" href="/ethan/counter/"><div><div class="emoji">🔢</div><div class="title">计数器</div><div class="meta">一个简单的小工具，也算站内功能页。</div></div><div class="foot">进入页面 →</div></a>
     </div>
   </div>
+
+  <script>
+    const target = Number(localStorage.getItem('ethan-target-best') || 0);
+    const balloon = Number(localStorage.getItem('ethan-balloon-best') || 0);
+    const dodge = Number(localStorage.getItem('ethan-dodge-best') || 0);
+    const relax = Number(localStorage.getItem('ethan-relax-best') || 0);
+    let theme = 'default';
+    if (target >= 150) theme = 'hunter';
+    else if (balloon >= 140) theme = 'candy';
+    else if (dodge >= 35) theme = 'space';
+    else if (relax >= 80) theme = 'bubble';
+
+    const root = document.documentElement;
+    const themeTag = document.getElementById('themeTag');
+    const themes = {
+      default: { bg1:'#1e3a8a', bg2:'#0f172a', bg3:'#020617', card:'rgba(255,255,255,.12)', border:'rgba(255,255,255,.12)', text:'#cbd5e1', tagBg:'rgba(96,165,250,.18)', tagText:'#bfdbfe', name:'ETHAN ARCADE' },
+      hunter: { bg1:'#1d4ed8', bg2:'#0f172a', bg3:'#172554', card:'rgba(59,130,246,.16)', border:'rgba(147,197,253,.22)', text:'#dbeafe', tagBg:'rgba(59,130,246,.25)', tagText:'#dbeafe', name:'蓝色猎手主题' },
+      candy: { bg1:'#db2777', bg2:'#7c3aed', bg3:'#312e81', card:'rgba(244,114,182,.16)', border:'rgba(251,207,232,.22)', text:'#fce7f3', tagBg:'rgba(244,114,182,.25)', tagText:'#fce7f3', name:'糖果气球主题' },
+      space: { bg1:'#0f172a', bg2:'#111827', bg3:'#312e81', card:'rgba(99,102,241,.16)', border:'rgba(165,180,252,.22)', text:'#e0e7ff', tagBg:'rgba(99,102,241,.25)', tagText:'#e0e7ff', name:'深空逃生主题' },
+      bubble: { bg1:'#0891b2', bg2:'#164e63', bg3:'#082f49', card:'rgba(34,211,238,.14)', border:'rgba(165,243,252,.22)', text:'#cffafe', tagBg:'rgba(34,211,238,.22)', tagText:'#cffafe', name:'清凉泡泡主题' },
+    };
+    const t = themes[theme];
+    root.style.setProperty('--bg1', t.bg1);
+    root.style.setProperty('--bg2', t.bg2);
+    root.style.setProperty('--bg3', t.bg3);
+    root.style.setProperty('--card', t.card);
+    root.style.setProperty('--card-border', t.border);
+    root.style.setProperty('--text-soft', t.text);
+    root.style.setProperty('--tag-bg', t.tagBg);
+    root.style.setProperty('--tag-text', t.tagText);
+    themeTag.textContent = t.name;
+  </script>
 </body>
 </html>
