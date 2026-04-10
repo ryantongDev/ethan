@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>成就与排行榜</title>
+  <title>成就树与徽章大厅</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -14,7 +14,7 @@
       color: white;
       padding: 24px;
     }
-    .wrap { width: min(1000px, 100%); margin: 0 auto; }
+    .wrap { width: min(1100px, 100%); margin: 0 auto; }
     .hero, .panel {
       background: rgba(255,255,255,.08);
       border: 1px solid rgba(255,255,255,.12);
@@ -35,16 +35,25 @@
     .name { font-size: 18px; font-weight: 900; margin-bottom: 8px; }
     .score { color: #fde68a; font-size: 24px; font-weight: 900; margin-bottom: 8px; }
     .desc { color: #cbd5e1; font-size: 14px; line-height: 1.6; }
-    .badges { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
-    .badge { background: rgba(59,130,246,.18); color: #dbeafe; padding: 8px 12px; border-radius: 999px; font-size: 13px; }
+    .badges, .skins { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    .badge, .skin { background: rgba(59,130,246,.18); color: #dbeafe; padding: 8px 12px; border-radius: 999px; font-size: 13px; }
+    .tree { display: grid; gap: 12px; margin-top: 14px; }
+    .node {
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.1);
+    }
+    .node strong { display: block; margin-bottom: 6px; }
+    .locked { opacity: .45; }
     .back { display: inline-block; margin-top: 10px; color: #93c5fd; text-decoration: none; font-weight: 700; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="hero">
-      <h1>🏆 成就与排行榜</h1>
-      <div class="sub">这个页面会读取你浏览器本地存下来的成绩，所以不同设备的数据会各自独立。适合做 Ethan 小游戏站的个人战绩页。</div>
+      <h1>🏆 成就树与徽章大厅</h1>
+      <div class="sub">这里会读取你浏览器本地记录的成绩，生成属于你自己的 Ethan Arcade 战绩、成就称号和主题皮肤解锁状态。</div>
       <a class="back" href="/ethan/">← 返回 Ethan 首页</a>
     </div>
 
@@ -54,8 +63,19 @@
     </div>
 
     <div class="panel">
-      <h2>已解锁成就</h2>
+      <h2>成就树</h2>
+      <div class="tree" id="tree"></div>
+    </div>
+
+    <div class="panel">
+      <h2>已解锁徽章</h2>
       <div class="badges" id="badges"></div>
+    </div>
+
+    <div class="panel">
+      <h2>皮肤系统（当前解锁）</h2>
+      <div class="skins" id="skins"></div>
+      <div class="sub" style="margin-top:12px;">目前先做成解锁展示，下一步可以把主题真正应用到首页和卡片配色。</div>
     </div>
   </div>
 
@@ -70,17 +90,17 @@
 
     const board = document.getElementById('board');
     const badges = document.getElementById('badges');
+    const skins = document.getElementById('skins');
+    const tree = document.getElementById('tree');
 
+    function v(key) { return Number(localStorage.getItem(key) || 0); }
     function formatValue(item, value) {
-      if (value == null || value === '') return '暂无';
-      const num = Number(value);
+      const num = Number(value || 0);
       if (item.type === 'time') return `${num.toFixed(1)} 秒`;
       return `${num}`;
     }
 
-    const rows = items.map(item => ({ ...item, raw: localStorage.getItem(item.key) || 0, num: Number(localStorage.getItem(item.key) || 0) }))
-      .sort((a, b) => b.num - a.num);
-
+    const rows = items.map(item => ({ ...item, raw: v(item.key), num: v(item.key) })).sort((a, b) => b.num - a.num);
     rows.forEach(item => {
       const el = document.createElement('div');
       el.className = 'card';
@@ -88,23 +108,56 @@
       board.appendChild(el);
     });
 
-    const unlocked = [];
-    const target = Number(localStorage.getItem('ethan-target-best') || 0);
-    const balloon = Number(localStorage.getItem('ethan-balloon-best') || 0);
-    const dodge = Number(localStorage.getItem('ethan-dodge-best') || 0);
-    const relax = Number(localStorage.getItem('ethan-relax-best') || 0);
+    const target = v('ethan-target-best');
+    const balloon = v('ethan-balloon-best');
+    const dodge = v('ethan-dodge-best');
+    const relax = v('ethan-relax-best');
+    const counter = v('simple-counter-value');
 
-    if (target >= 100) unlocked.push('🎯 神射手');
-    if (balloon >= 100) unlocked.push('🎈 气球克星');
-    if (dodge >= 20) unlocked.push('🌀 生存专家');
-    if (relax >= 50) unlocked.push('🫧 解压达人');
-    if (unlocked.length === 0) unlocked.push('🌱 新手上路');
+    const achievements = [
+      { name: '新手射手', ok: target >= 50, desc: '射靶达到 50 分' },
+      { name: '神射手', ok: target >= 150, desc: '射靶达到 150 分' },
+      { name: '气球杀手', ok: balloon >= 60, desc: '弹弓打气球达到 60 分' },
+      { name: '气球统治者', ok: balloon >= 140, desc: '弹弓打气球达到 140 分' },
+      { name: '生存者', ok: dodge >= 15, desc: '躲避存活超过 15 秒' },
+      { name: '生存大师', ok: dodge >= 35, desc: '躲避存活超过 35 秒' },
+      { name: '解压学徒', ok: relax >= 30, desc: '捏爆 30 个泡泡' },
+      { name: '解压之王', ok: relax >= 80, desc: '捏爆 80 个泡泡' },
+      { name: '数字狂人', ok: counter >= 100, desc: '计数器累到 100' },
+    ];
 
-    unlocked.forEach(text => {
+    achievements.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'node' + (item.ok ? '' : ' locked');
+      el.innerHTML = `<strong>${item.ok ? '✅' : '🔒'} ${item.name}</strong><div>${item.desc}</div>`;
+      tree.appendChild(el);
+    });
+
+    const unlockedBadges = [];
+    if (target >= 150) unlockedBadges.push('🎯 传奇射手');
+    if (balloon >= 140) unlockedBadges.push('🎈 爆破达人');
+    if (dodge >= 35) unlockedBadges.push('🌀 极限幸存者');
+    if (relax >= 80) unlockedBadges.push('🫧 泡泡毁灭者');
+    if (counter >= 100) unlockedBadges.push('🔢 数值掌控者');
+    if (unlockedBadges.length === 0) unlockedBadges.push('🌱 初来乍到');
+    unlockedBadges.forEach(text => {
       const el = document.createElement('div');
       el.className = 'badge';
       el.textContent = text;
       badges.appendChild(el);
+    });
+
+    const unlockedSkins = [];
+    if (target >= 50) unlockedSkins.push('蓝色猎手主题');
+    if (balloon >= 60) unlockedSkins.push('糖果气球主题');
+    if (dodge >= 15) unlockedSkins.push('深空逃生主题');
+    if (relax >= 30) unlockedSkins.push('清凉泡泡主题');
+    if (unlockedSkins.length === 0) unlockedSkins.push('默认主题');
+    unlockedSkins.forEach(text => {
+      const el = document.createElement('div');
+      el.className = 'skin';
+      el.textContent = text;
+      skins.appendChild(el);
     });
   </script>
 </body>
