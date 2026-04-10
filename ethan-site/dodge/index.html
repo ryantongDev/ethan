@@ -38,6 +38,7 @@
     <div class="sub">拖动蓝色小方块躲开红色陨石，活得越久越厉害</div>
     <canvas id="game" width="540" height="960"></canvas>
     <div class="actions">
+      <button id="musicBtn">音乐：关</button>
       <a class="back" href="/ethan/">返回首页</a>
       <button id="restart">重新开始</button>
     </div>
@@ -53,6 +54,40 @@
 
     let best = Number(localStorage.getItem(BEST_KEY) || 0);
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const musicBtn = document.getElementById('musicBtn');
+    let musicOn = false;
+    let musicTimer = null;
+    function bgNote(freq = 440, dur = 0.18, type = 'sine', gainValue = 0.014) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      g.gain.setValueAtTime(0.001, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(gainValue, audioCtx.currentTime + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime + dur + 0.02);
+    }
+    function musicLoop() {
+      if (!musicOn) return;
+      const seq = [392, 523.25, 587.33, 523.25, 392, 329.63];
+      seq.forEach((f, i) => setTimeout(() => bgNote(f, 0.22, 'sine', 0.012), i * 220));
+      musicTimer = setTimeout(musicLoop, 1600);
+    }
+    function toggleMusic() {
+      musicOn = !musicOn;
+      musicBtn.textContent = `音乐：${musicOn ? '开' : '关'}`;
+      if (musicOn) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        musicLoop();
+      } else if (musicTimer) {
+        clearTimeout(musicTimer);
+        musicTimer = null;
+      }
+    }
+    musicBtn.addEventListener('click', toggleMusic);
+
     function hitSound() { if (audioCtx.state === 'suspended') audioCtx.resume(); const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.type='sawtooth'; o.frequency.setValueAtTime(160, audioCtx.currentTime); o.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime+0.2); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.08, audioCtx.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+0.21); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+0.22); }
     let player, rocks, particles, dragging, aliveTime, over, last;
 

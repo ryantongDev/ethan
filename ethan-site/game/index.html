@@ -153,6 +153,40 @@
     let shootCooldown = 0;
     let lastTime = 0;
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const musicBtn = document.getElementById('musicBtn');
+    let musicOn = false;
+    let musicTimer = null;
+    function bgNote(freq = 440, dur = 0.18, type = 'sine', gainValue = 0.014) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      g.gain.setValueAtTime(0.001, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(gainValue, audioCtx.currentTime + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime + dur + 0.02);
+    }
+    function musicLoop() {
+      if (!musicOn) return;
+      const seq = [392, 523.25, 587.33, 523.25, 392, 329.63];
+      seq.forEach((f, i) => setTimeout(() => bgNote(f, 0.22, 'sine', 0.012), i * 220));
+      musicTimer = setTimeout(musicLoop, 1600);
+    }
+    function toggleMusic() {
+      musicOn = !musicOn;
+      musicBtn.textContent = `音乐：${musicOn ? '开' : '关'}`;
+      if (musicOn) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        musicLoop();
+      } else if (musicTimer) {
+        clearTimeout(musicTimer);
+        musicTimer = null;
+      }
+    }
+    musicBtn.addEventListener('click', toggleMusic);
+
 
     function playSound(type) {
       if (audioCtx.state === 'suspended') audioCtx.resume();

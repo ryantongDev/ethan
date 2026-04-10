@@ -39,6 +39,7 @@
     <div class="sub">点中靶心得分更高，30 秒内看看你能打多少分</div>
     <canvas id="game" width="540" height="960"></canvas>
     <div class="actions">
+      <button id="musicBtn">音乐：关</button>
       <a class="back" href="/ethan/">返回首页</a>
       <button id="restart">重新开始</button>
     </div>
@@ -56,6 +57,40 @@
     const target = { x: 270, y: 300, r: 70, vx: 160, vy: 180 };
     const pops = [];
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const musicBtn = document.getElementById('musicBtn');
+    let musicOn = false;
+    let musicTimer = null;
+    function bgNote(freq = 440, dur = 0.18, type = 'sine', gainValue = 0.014) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      g.gain.setValueAtTime(0.001, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(gainValue, audioCtx.currentTime + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime + dur + 0.02);
+    }
+    function musicLoop() {
+      if (!musicOn) return;
+      const seq = [392, 523.25, 587.33, 523.25, 392, 329.63];
+      seq.forEach((f, i) => setTimeout(() => bgNote(f, 0.22, 'sine', 0.012), i * 220));
+      musicTimer = setTimeout(musicLoop, 1600);
+    }
+    function toggleMusic() {
+      musicOn = !musicOn;
+      musicBtn.textContent = `音乐：${musicOn ? '开' : '关'}`;
+      if (musicOn) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        musicLoop();
+      } else if (musicTimer) {
+        clearTimeout(musicTimer);
+        musicTimer = null;
+      }
+    }
+    musicBtn.addEventListener('click', toggleMusic);
+
     function playTone(freq, dur=0.08) { if (audioCtx.state === 'suspended') audioCtx.resume(); const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.type='triangle'; o.frequency.setValueAtTime(freq, audioCtx.currentTime); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.06, audioCtx.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+dur); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+dur+0.01); }
     function updateHud() { scoreEl.textContent = `分数：${score}`; timerEl.textContent = `时间：${Math.max(0, Math.ceil(timeLeft))}`; bestEl.textContent = `最高：${best}`; }
     function resetGame() { score = 0; timeLeft = 30; playing = true; target.x = 270; target.y = 300; target.vx = 140 + Math.random() * 80; target.vy = 150 + Math.random() * 90; pops.length = 0; lastTick = performance.now(); updateHud(); }
