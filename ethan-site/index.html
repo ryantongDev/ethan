@@ -3,54 +3,116 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>小网页集合</title>
+  <title>Ethan 小游戏站</title>
   <style>
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       min-height: 100vh;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, #0f172a, #1d4ed8 60%, #0ea5e9);
       font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: radial-gradient(circle at top, #1e3a8a, #0f172a 58%, #020617 100%);
       color: white;
       padding: 24px;
-      box-sizing: border-box;
     }
-    .card {
-      width: min(100%, 560px);
-      background: rgba(255,255,255,.12);
-      border: 1px solid rgba(255,255,255,.18);
-      border-radius: 24px;
-      padding: 24px;
-      backdrop-filter: blur(12px);
-      box-shadow: 0 18px 48px rgba(0,0,0,.25);
+    .wrap { width: min(1100px, 100%); margin: 0 auto; }
+    .hero {
+      background: linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.06));
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: 0 20px 50px rgba(0,0,0,.28);
+      backdrop-filter: blur(14px);
+      margin-bottom: 18px;
     }
-    h1 { margin: 0 0 10px; }
-    p { color: #dbeafe; line-height: 1.6; }
-    .links { display: grid; gap: 12px; margin-top: 18px; }
-    a {
-      display: block;
-      text-decoration: none;
-      color: white;
-      background: rgba(255,255,255,.1);
-      padding: 16px 18px;
-      border-radius: 16px;
+    .tag {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(96,165,250,.18);
+      color: #bfdbfe;
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+    h1 { margin: 0 0 10px; font-size: clamp(30px, 4vw, 52px); }
+    .desc { color: #cbd5e1; font-size: 16px; line-height: 1.7; max-width: 760px; }
+    .stats { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+    .stat {
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      padding: 12px 16px;
+      color: #e2e8f0;
       font-weight: 700;
     }
+    .panel {
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 24px;
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+    .panel h2 { margin: 0 0 10px; font-size: 22px; }
+    .panel p { margin: 0; color: #cbd5e1; line-height: 1.7; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+    .card {
+      text-decoration: none;
+      color: white;
+      background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.07));
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 22px;
+      padding: 18px;
+      min-height: 160px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform .15s ease, border-color .15s ease;
+    }
+    .card:hover { transform: translateY(-4px); border-color: rgba(147,197,253,.5); }
+    .emoji { font-size: 30px; margin-bottom: 10px; }
+    .title { font-size: 20px; font-weight: 900; margin-bottom: 8px; }
+    .meta { color: #cbd5e1; line-height: 1.6; font-size: 14px; }
+    .foot { margin-top: 12px; color: #93c5fd; font-weight: 700; }
+    .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+    .mini-badge { font-size: 12px; color: #dbeafe; background: rgba(59,130,246,.18); padding: 6px 10px; border-radius: 999px; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>小网页集合</h1>
-    <p>这里放了两个页面：一个手机版射击小游戏，一个简单计数器。</p>
-    <div class="links">
-      <a href="/ethan/game/">进入射击小游戏</a>
-      <a href="/ethan/counter/">进入计数器</a>
-          <a href="/ethan/target/">进入射靶小游戏</a>
-          <a href="/ethan/balloon/">进入弹弓打气球</a>
-          <a href="/ethan/dodge/">进入躲避小游戏</a>
-          <a href="/ethan/fight/">进入打架小游戏</a>
-          <a href="/ethan/relax/">进入解压小游戏</a>
+  <div class="wrap">
+    <div class="hero">
+      <div class="tag">ETHAN ARCADE</div>
+      <h1>Ethan 小游戏站</h1>
+      <div class="desc">这里是独立挂在 <b>/ethan/</b> 下的小型游戏站，和主项目隔离。现在已经能玩射击、射靶、弹弓、躲避、打架、解压这些小游戏，还加了音效和背景音乐开关。</div>
+      <div class="stats">
+        <div class="stat">🎮 游戏数量：7</div>
+        <div class="stat">🔊 音效：已开启</div>
+        <div class="stat">🎵 背景音乐：可开关</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>成就系统（轻量版）</h2>
+      <p>每个游戏目前都会记录一些本地成绩，比如最高分、最佳存活、最高命中。下一步可以继续扩成统一成就页和总排行榜。</p>
+      <div class="badge-row">
+        <div class="mini-badge">本地成绩已启用</div>
+        <div class="mini-badge">主项目隔离</div>
+        <div class="mini-badge">支持手机访问</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <a class="card" href="/ethan/game/"><div><div class="emoji">🚀</div><div class="title">射击小游戏</div><div class="meta">横向移动，持续开火，清掉敌人。</div></div><div class="foot">进入游戏 →</div></a>
+      <a class="card" href="/ethan/target/"><div><div class="emoji">🎯</div><div class="title">射靶小游戏</div><div class="meta">点中靶心，分数更高，考验手感。</div></div><div class="foot">进入游戏 →</div></a>
+      <a class="card" href="/ethan/balloon/"><div><div class="emoji">🎈</div><div class="title">弹弓打气球</div><div class="meta">拉弹弓、打气球，节奏轻松。</div></div><div class="foot">进入游戏 →</div></a>
+      <a class="card" href="/ethan/dodge/"><div><div class="emoji">🌀</div><div class="title">躲避小游戏</div><div class="meta">拖动角色，避开陨石，坚持更久。</div></div><div class="foot">进入游戏 →</div></a>
+      <a class="card" href="/ethan/fight/"><div><div class="emoji">🥊</div><div class="title">打架小游戏</div><div class="meta">靠近对手，挥拳对打，先击倒先赢。</div></div><div class="foot">进入游戏 →</div></a>
+      <a class="card" href="/ethan/relax/"><div><div class="emoji">🫧</div><div class="title">解压小游戏</div><div class="meta">疯狂点泡泡，轻松解压。</div></div><div class="foot">进入游戏 →</div></a>
+      <a class="card" href="/ethan/counter/"><div><div class="emoji">🔢</div><div class="title">计数器</div><div class="meta">一个简单的小工具，也算站内功能页。</div></div><div class="foot">进入页面 →</div></a>
     </div>
   </div>
 </body>
