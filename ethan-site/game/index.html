@@ -152,6 +152,17 @@
     let enemyTimer = 0;
     let shootCooldown = 0;
     let lastTime = 0;
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.connect(g); g.connect(audioCtx.destination);
+      if (type === 'shoot') { o.type = 'square'; o.frequency.setValueAtTime(520, audioCtx.currentTime); o.frequency.exponentialRampToValueAtTime(220, audioCtx.currentTime + 0.05); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.04, audioCtx.currentTime + 0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.06); o.start(); o.stop(audioCtx.currentTime + 0.07); }
+      if (type === 'boom') { o.type = 'sawtooth'; o.frequency.setValueAtTime(180, audioCtx.currentTime); o.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.12); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.07, audioCtx.currentTime + 0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.13); o.start(); o.stop(audioCtx.currentTime + 0.14); }
+      if (type === 'hit') { o.type = 'triangle'; o.frequency.setValueAtTime(140, audioCtx.currentTime); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.09, audioCtx.currentTime + 0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1); o.start(); o.stop(audioCtx.currentTime + 0.11); }
+    }
 
     const player = {
       x: canvas.width / 2,
@@ -279,6 +290,7 @@
         if (e.y - e.size > canvas.height) {
           enemies.splice(i, 1);
           hp--;
+          playSound('hit');
           updateHud();
           if (hp <= 0) gameOver = true;
           continue;
@@ -291,6 +303,7 @@
             enemies.splice(i, 1);
             bullets.splice(j, 1);
             score += 10;
+            playSound('boom');
             updateHud();
             break;
           }

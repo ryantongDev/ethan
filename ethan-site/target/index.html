@@ -55,6 +55,8 @@
     let best = Number(localStorage.getItem(BEST_KEY) || 0);
     const target = { x: 270, y: 300, r: 70, vx: 160, vy: 180 };
     const pops = [];
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playTone(freq, dur=0.08) { if (audioCtx.state === 'suspended') audioCtx.resume(); const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.type='triangle'; o.frequency.setValueAtTime(freq, audioCtx.currentTime); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.06, audioCtx.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+dur); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+dur+0.01); }
     function updateHud() { scoreEl.textContent = `分数：${score}`; timerEl.textContent = `时间：${Math.max(0, Math.ceil(timeLeft))}`; bestEl.textContent = `最高：${best}`; }
     function resetGame() { score = 0; timeLeft = 30; playing = true; target.x = 270; target.y = 300; target.vx = 140 + Math.random() * 80; target.vy = 150 + Math.random() * 90; pops.length = 0; lastTick = performance.now(); updateHud(); }
     function moveTarget(dt) { target.x += target.vx * dt; target.y += target.vy * dt; if (target.x < target.r || target.x > canvas.width - target.r) target.vx *= -1; if (target.y < target.r + 40 || target.y > canvas.height - target.r - 40) target.vy *= -1; }

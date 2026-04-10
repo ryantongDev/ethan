@@ -52,6 +52,8 @@
     const BEST_KEY = 'ethan-dodge-best';
 
     let best = Number(localStorage.getItem(BEST_KEY) || 0);
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function hitSound() { if (audioCtx.state === 'suspended') audioCtx.resume(); const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.type='sawtooth'; o.frequency.setValueAtTime(160, audioCtx.currentTime); o.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime+0.2); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.08, audioCtx.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+0.21); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+0.22); }
     let player, rocks, particles, dragging, aliveTime, over, last;
 
     function resetGame() {
@@ -134,6 +136,7 @@
         if (r.x < r.size || r.x > canvas.width - r.size) r.vx *= -1;
         if (Math.abs(r.x - player.x) < (r.size + player.size) * 0.6 && Math.abs(r.y - player.y) < (r.size + player.size) * 0.6) {
           over = true;
+          hitSound();
           explode();
           if (aliveTime > best) { best = aliveTime; localStorage.setItem(BEST_KEY, String(best)); }
         }

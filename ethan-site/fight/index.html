@@ -58,6 +58,8 @@
     const rightBtn = document.getElementById('rightBtn');
     const attackBtn = document.getElementById('attackBtn');
     const restartBtn = document.getElementById('restart');
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function sound(kind) { if (audioCtx.state === 'suspended') audioCtx.resume(); const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); if (kind==='punch') { o.type='square'; o.frequency.setValueAtTime(200, audioCtx.currentTime); o.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime+0.08); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.07, audioCtx.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+0.09); o.start(); o.stop(audioCtx.currentTime+0.1);} if (kind==='win') { o.type='triangle'; o.frequency.setValueAtTime(440, audioCtx.currentTime); o.frequency.linearRampToValueAtTime(660, audioCtx.currentTime+0.12); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.06, audioCtx.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+0.14); o.start(); o.stop(audioCtx.currentTime+0.15);} }
 
     const touch = { left: false, right: false };
     let player, enemy, effects, over, last;
@@ -92,12 +94,13 @@
 
     function attack(attacker, defender, damage) {
       if (attacker.attackCd > 0 || over) return;
+      sound('punch');
       attacker.attackCd = 0.6;
       attacker.attacking = 0.18;
       if (Math.abs(attacker.x - defender.x) < 110) {
         defender.hp -= damage;
         effects.push({ x: defender.x, y: defender.y - 40, text: `-${damage}`, life: 0.5 });
-        if (defender.hp <= 0) over = true;
+        if (defender.hp <= 0) { over = true; sound('win'); }
       }
       hud();
     }
