@@ -38,6 +38,11 @@
     </div>
 
     <div class="panel">
+      <h2>总积分与总称号</h2>
+      <div class="grid" id="summary"></div>
+    </div>
+
+    <div class="panel">
       <h2>本地排行榜</h2>
       <div class="grid" id="board"></div>
     </div>
@@ -68,6 +73,7 @@
       { key: 'ethan-relax-best', name: '解压', type: 'score', desc: '累计捏爆泡泡数' },
     ];
     const board = document.getElementById('board');
+    const summary = document.getElementById('summary');
     const badges = document.getElementById('badges');
     const skins = document.getElementById('skins');
     const tree = document.getElementById('tree');
@@ -77,6 +83,12 @@
     rows.forEach(item => { const el = document.createElement('div'); el.className = 'card'; el.innerHTML = `<div class="name">${item.name}</div><div class="score">${fmt(item, item.raw)}</div><div class="desc">${item.desc}</div>`; board.appendChild(el); });
 
     const scores = { target:v('ethan-target-best'), balloon:v('ethan-balloon-best'), dodge:v('ethan-dodge-best'), relax:v('ethan-relax-best'), counter:v('simple-counter-value') };
+    const totalScore = Math.floor(scores.target + scores.balloon + scores.relax + scores.counter / 10 + scores.dodge * 5);
+    let title = '新手冒险者';
+    if (totalScore >= 1200) title = '传说街机王';
+    else if (totalScore >= 700) title = '高级挑战者';
+    else if (totalScore >= 300) title = '熟练玩家';
+    summary.innerHTML = `<div class="card"><div class="name">总积分</div><div class="score">${totalScore}</div><div class="desc">综合各小游戏成绩折算而来</div></div><div class="card"><div class="name">当前总称号</div><div class="score">${title}</div><div class="desc">继续提升战绩可以升级称号</div></div>`;
     const ach = [
       { name:'射靶成长线', now:scores.target, steps:[50,150,300], labels:['新手射手','神射手','传说神射手'] },
       { name:'气球成长线', now:scores.balloon, steps:[60,140,260], labels:['气球杀手','气球统治者','气球终结者'] },
@@ -109,6 +121,32 @@
     if (scores.relax >= 80) unlockedSkins.push('清凉泡泡主题');
     if (!unlockedSkins.length) unlockedSkins.push('默认主题');
     unlockedSkins.forEach(text => { const el = document.createElement('div'); el.className = 'skin'; el.textContent = text; skins.appendChild(el); });
+  </script>
+<script>
+    const target = Number(localStorage.getItem('ethan-target-best') || 0);
+    const balloon = Number(localStorage.getItem('ethan-balloon-best') || 0);
+    const dodge = Number(localStorage.getItem('ethan-dodge-best') || 0);
+    const relax = Number(localStorage.getItem('ethan-relax-best') || 0);
+    let theme = 'default';
+    if (target >= 150) theme = 'hunter';
+    else if (balloon >= 140) theme = 'candy';
+    else if (dodge >= 35) theme = 'space';
+    else if (relax >= 80) theme = 'bubble';
+    const root = document.documentElement;
+    const themes = {
+      default: { bg1:'#312e81', bg2:'#0f172a', bg3:'#020617', panel:'rgba(255,255,255,.08)', border:'rgba(255,255,255,.12)', text:'#cbd5e1' },
+      hunter: { bg1:'#1d4ed8', bg2:'#0f172a', bg3:'#172554', panel:'rgba(59,130,246,.16)', border:'rgba(147,197,253,.22)', text:'#dbeafe' },
+      candy: { bg1:'#db2777', bg2:'#7c3aed', bg3:'#312e81', panel:'rgba(244,114,182,.16)', border:'rgba(251,207,232,.22)', text:'#fce7f3' },
+      space: { bg1:'#0f172a', bg2:'#111827', bg3:'#312e81', panel:'rgba(99,102,241,.16)', border:'rgba(165,180,252,.22)', text:'#e0e7ff' },
+      bubble: { bg1:'#0891b2', bg2:'#164e63', bg3:'#082f49', panel:'rgba(34,211,238,.14)', border:'rgba(165,243,252,.22)', text:'#cffafe' },
+    };
+    const cfg = themes[theme];
+    root.style.setProperty('--bg1', cfg.bg1);
+    root.style.setProperty('--bg2', cfg.bg2);
+    root.style.setProperty('--bg3', cfg.bg3);
+    root.style.setProperty('--panel', cfg.panel);
+    root.style.setProperty('--border', cfg.border);
+    root.style.setProperty('--text', cfg.text);
   </script>
 </body>
 </html>
