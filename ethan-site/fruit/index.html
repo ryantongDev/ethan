@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>切西瓜</title>
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { margin:0; min-height:100vh; background:linear-gradient(180deg,#0f172a,#14532d 70%,#166534); font-family:Arial,"PingFang SC","Microsoft YaHei",sans-serif; color:#fff; display:flex; justify-content:center; align-items:center; padding:16px; }
+    .wrap{width:min(100%,560px)} .top{display:flex;justify-content:space-between;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+    .badge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:8px 12px;font-weight:700;color:#dcfce7}
+    .title{text-align:center;font-size:26px;font-weight:900;margin:4px 0 6px}.sub{text-align:center;color:#bbf7d0;font-size:13px;margin-bottom:12px}
+    canvas{width:100%;aspect-ratio:9/16;display:block;border-radius:22px;background:linear-gradient(180deg,#86efac 0%,#4ade80 55%,#166534 100%);border:2px solid rgba(255,255,255,.35)}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.btn,.back{border:none;border-radius:16px;padding:14px;font-size:16px;font-weight:800;color:#fff;background:rgba(255,255,255,.12);text-decoration:none;display:flex;align-items:center;justify-content:center}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><div class="badge" id="score">分数：0</div><div class="badge" id="best">最高：0</div><div class="badge" id="time">时间：30</div></div>
+  <div class="title">切西瓜</div><div class="sub">手指划过水果就算切中，30 秒内尽量多切</div>
+  <canvas id="game" width="540" height="960"></canvas>
+  <div class="actions"><a class="back" href="/ethan/">返回首页</a><button class="btn" id="restart">重新开始</button></div>
+</div>
+<script>
+const c=game=document.getElementById('game'),ctx=c.getContext('2d');const scoreEl=document.getElementById('score'),bestEl=document.getElementById('best'),timeEl=document.getElementById('time');let score=0,best=Number(localStorage.getItem('ethan-fruit-best')||0),time=30,last=performance.now(),over=false,trail=[],fruits=[];function hud(){scoreEl.textContent=`分数：${score}`;bestEl.textContent=`最高：${best}`;timeEl.textContent=`时间：${Math.ceil(time)}`;}function spawn(){const colors=['#ef4444','#f59e0b','#22c55e','#3b82f6'];fruits.push({x:60+Math.random()*420,y:1020,r:28+Math.random()*18,vx:(Math.random()-.5)*130,vy:-760-Math.random()*160,color:colors[Math.floor(Math.random()*colors.length)],hit:false});}
+for(let i=0;i<4;i++)spawn();function reset(){score=0;time=30;over=false;fruits=[];trail=[];for(let i=0;i<4;i++)spawn();hud();}
+function point(e){const r=c.getBoundingClientRect(),p=e.touches?e.touches[0]:e;return{x:(p.clientX-r.left)*(c.width/r.width),y:(p.clientY-r.top)*(c.height/r.height)}}
+function addTrail(e){const p=point(e);trail.push({...p,life:0.28});if(trail.length>8)trail.shift();e.preventDefault();}
+c.addEventListener('mousemove',addTrail);c.addEventListener('touchmove',addTrail,{passive:false});c.addEventListener('touchstart',addTrail,{passive:false});document.getElementById('restart').addEventListener('click',reset);
+function update(dt){if(over)return;time-=dt;if(time<=0){time=0;over=true;}while(fruits.length<5)spawn();fruits.forEach(f=>{f.x+=f.vx*dt;f.y+=f.vy*dt;f.vy+=520*dt;if(f.y>1100){Object.assign(f,{x:60+Math.random()*420,y:1020,vx:(Math.random()-.5)*130,vy:-760-Math.random()*160,hit:false});}});trail.forEach(t=>t.life-=dt);trail=trail.filter(t=>t.life>0);for(const f of fruits){if(f.hit)continue;for(const t of trail){if(Math.hypot(t.x-f.x,t.y-f.y)<f.r){f.hit=true;score+=10;if(score>best){best=score;localStorage.setItem('ethan-fruit-best',String(best));}setTimeout(()=>Object.assign(f,{x:60+Math.random()*420,y:1020,vx:(Math.random()-.5)*130,vy:-760-Math.random()*160,hit:false}),120);break;}}}hud();}
+function draw(){ctx.clearRect(0,0,c.width,c.height);fruits.forEach(f=>{if(f.hit)return;ctx.fillStyle=f.color;ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,Math.PI*2);ctx.fill();ctx.fillStyle='rgba(255,255,255,.28)';ctx.beginPath();ctx.arc(f.x-f.r*.28,f.y-f.r*.28,f.r*.25,0,Math.PI*2);ctx.fill();});for(let i=1;i<trail.length;i++){ctx.strokeStyle=`rgba(255,255,255,${trail[i].life*2})`;ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(trail[i-1].x,trail[i-1].y);ctx.lineTo(trail[i].x,trail[i].y);ctx.stroke();}if(over){ctx.fillStyle='rgba(0,0,0,.4)';ctx.fillRect(0,0,c.width,c.height);ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font='bold 46px Arial';ctx.fillText('时间到',c.width/2,c.height/2-20);ctx.font='26px Arial';ctx.fillText(`本局分数：${score}`,c.width/2,c.height/2+24);ctx.textAlign='left';}}
+function loop(now){const dt=Math.min(.033,(now-last)/1000);last=now;update(dt);draw();requestAnimationFrame(loop)}hud();requestAnimationFrame(loop);
+</script>
+</body>
+</html>

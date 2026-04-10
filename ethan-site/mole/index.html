@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>打地鼠</title>
+  <style>
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}body{margin:0;min-height:100vh;background:linear-gradient(180deg,#1f2937,#14532d 70%,#166534);font-family:Arial,"PingFang SC","Microsoft YaHei",sans-serif;color:#fff;display:flex;justify-content:center;align-items:center;padding:16px}.wrap{width:min(100%,560px)}.top{display:flex;justify-content:space-between;gap:8px;margin-bottom:10px;flex-wrap:wrap}.badge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:8px 12px;font-weight:700;color:#dcfce7}.title{text-align:center;font-size:26px;font-weight:900;margin:4px 0 6px}.sub{text-align:center;color:#bbf7d0;font-size:13px;margin-bottom:12px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.hole{aspect-ratio:1/1;border-radius:50%;background:#3f3f46;position:relative;overflow:hidden;border:4px solid #57534e}.mole{position:absolute;left:50%;bottom:-60%;transform:translateX(-50%);width:62%;height:62%;border-radius:50% 50% 40% 40%;background:#a16207;transition:bottom .15s}.hole.up .mole{bottom:10%}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.btn,.back{border:none;border-radius:16px;padding:14px;font-size:16px;font-weight:800;color:#fff;background:rgba(255,255,255,.12);text-decoration:none;display:flex;align-items:center;justify-content:center}
+  </style>
+</head>
+<body>
+<div class="wrap"><div class="top"><div class="badge" id="score">分数：0</div><div class="badge" id="best">最高：0</div><div class="badge" id="time">时间：30</div></div><div class="title">打地鼠</div><div class="sub">地鼠冒头就点，30 秒内打得越多越好</div><div class="grid" id="grid"></div><div class="actions"><a class="back" href="/ethan/">返回首页</a><button class="btn" id="restart">重新开始</button></div></div>
+<script>
+const grid=document.getElementById('grid'),scoreEl=document.getElementById('score'),bestEl=document.getElementById('best'),timeEl=document.getElementById('time');let score=0,best=Number(localStorage.getItem('ethan-mole-best')||0),time=30,active=-1,over=false,timer=null;for(let i=0;i<9;i++){const d=document.createElement('div');d.className='hole';d.innerHTML='<div class="mole"></div>';d.addEventListener('click',()=>hit(i));grid.appendChild(d);}const holes=[...document.querySelectorAll('.hole')];function hud(){scoreEl.textContent=`分数：${score}`;bestEl.textContent=`最高：${best}`;timeEl.textContent=`时间：${Math.ceil(time)}`;}function pop(){if(over)return;holes.forEach(h=>h.classList.remove('up'));active=Math.floor(Math.random()*9);holes[active].classList.add('up');timer=setTimeout(pop,420+Math.random()*350);}function hit(i){if(over)return;if(i===active){score+=10;if(score>best){best=score;localStorage.setItem('ethan-mole-best',String(best));}holes[i].classList.remove('up');active=-1;hud();}}
+function reset(){score=0;time=30;over=false;active=-1;clearTimeout(timer);hud();pop();}document.getElementById('restart').addEventListener('click',reset);setInterval(()=>{if(over)return;time-=1;if(time<=0){time=0;over=true;clearTimeout(timer);holes.forEach(h=>h.classList.remove('up'));}hud();},1000);hud();pop();
+</script>
+</body>
+</html>
