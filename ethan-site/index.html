@@ -129,5 +129,7 @@
     themeTag.textContent = t.name;
     const userLine = document.getElementById('userLine'); if (userLine) userLine.textContent = `当前玩家：${currentUser || '未登录'}`;
   </script>
+  <script src="/ethan/achievement-helper.js"></script>
+  <script>window.EthanAchievements && window.EthanAchievements.run();</script>
 </body>
 </html>
