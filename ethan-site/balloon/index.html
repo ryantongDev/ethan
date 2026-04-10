@@ -23,8 +23,8 @@
     .title { text-align: center; font-size: 26px; font-weight: 900; margin: 4px 0 6px; }
     .sub { text-align: center; color: #bfdbfe; font-size: 13px; margin-bottom: 12px; }
     canvas { width: 100%; aspect-ratio: 9/16; display: block; border-radius: 22px; background: linear-gradient(180deg, #7dd3fc 0%, #bfdbfe 30%, #fde68a 55%, #86efac 56%, #22c55e 100%); border: 2px solid rgba(255,255,255,.35); box-shadow: 0 16px 40px rgba(0,0,0,.28); }
-    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
-    button, .back { border: none; border-radius: 16px; padding: 14px; font-size: 16px; font-weight: 800; color: #fff; background: rgba(255,255,255,.12); cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; position: relative; z-index: 5; }
+    button, .back { border: none; border-radius: 16px; padding: 14px; font-size: 16px; font-weight: 800; color: #fff; background: rgba(255,255,255,.12); cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; touch-action: manipulation; position: relative; z-index: 6; }
   </style>
 </head>
 <body>
@@ -116,6 +116,7 @@
       }
     }
     musicBtn.addEventListener('click', toggleMusic);
+    musicBtn.addEventListener('touchend', (e) => { e.preventDefault(); toggleMusic(); }, { passive: false });
 
     function playSound(kind) { if (audioCtx.state === 'suspended') audioCtx.resume(); const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); if (kind==='launch') { o.type='triangle'; o.frequency.setValueAtTime(240, audioCtx.currentTime); o.frequency.linearRampToValueAtTime(420, audioCtx.currentTime+0.08); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.05, audioCtx.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+0.09); o.start(); o.stop(audioCtx.currentTime+0.1);} if (kind==='pop') { o.type='square'; o.frequency.setValueAtTime(620, audioCtx.currentTime); o.frequency.exponentialRampToValueAtTime(180, audioCtx.currentTime+0.08); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.06, audioCtx.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+0.09); o.start(); o.stop(audioCtx.currentTime+0.1);} }
 
@@ -170,6 +171,7 @@
       e.preventDefault();
     }
     function endDrag(e) {
+      if (e && e.target && e.target.closest && e.target.closest('.actions')) return;
       if (!dragging) return;
       dragging = false;
       const dx = sling.x - aim.x, dy = sling.y - aim.y;
@@ -177,7 +179,7 @@
       projectile = { x: sling.x, y: sling.y, vx: dx * 4.2, vy: dy * 4.2, r: 12 };
       ammo -= 1;
       hud();
-      e.preventDefault();
+      if (e) e.preventDefault();
     }
 
     canvas.addEventListener('mousedown', startDrag);
@@ -187,6 +189,7 @@
     canvas.addEventListener('touchmove', moveDrag, { passive: false });
     canvas.addEventListener('touchend', endDrag, { passive: false });
     restartBtn.addEventListener('click', (e) => { e.preventDefault(); resetGame(); });
+    restartBtn.addEventListener('touchend', (e) => { e.preventDefault(); resetGame(); }, { passive: false });
 
     function pop(x, y, color) {
       for (let i = 0; i < 12; i++) particles.push({ x, y, vx: (Math.random()-0.5)*180, vy: (Math.random()-0.5)*180, life: 0.8, color });
