@@ -51,6 +51,22 @@
     const BEST_KEY = 'ethan-relax-best';
     let popped = 0, best = Number(localStorage.getItem(BEST_KEY) || 0), bubbles = [], particles = [];
 
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function popSound() {
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(520, audioCtx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(180, audioCtx.currentTime + 0.08);
+      g.gain.setValueAtTime(0.001, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.08, audioCtx.currentTime + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.09);
+      o.connect(g);
+      g.connect(audioCtx.destination);
+      o.start();
+      o.stop(audioCtx.currentTime + 0.1);
+    }
+
     function makeBubble() {
       const colors = ['#f9a8d4','#93c5fd','#86efac','#fde68a','#c4b5fd','#67e8f9'];
       return {
@@ -90,6 +106,8 @@
           bubbles.splice(i, 1);
           popped += 1;
           if (popped > best) { best = popped; localStorage.setItem(BEST_KEY, String(best)); }
+          if (audioCtx.state === 'suspended') audioCtx.resume();
+          popSound();
           refill();
           hud();
           return;
