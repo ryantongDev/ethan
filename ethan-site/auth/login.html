@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ethan Arcade 登录</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin:0; min-height:100vh; display:grid; place-items:center; background: radial-gradient(circle at top, #1e3a8a, #0f172a 58%, #020617 100%); font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif; color:#fff; padding:20px; }
+    .card { width:min(100%,420px); background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.14); border-radius:24px; padding:24px; backdrop-filter:blur(14px); }
+    h1 { margin:0 0 10px; }
+    p { color:#cbd5e1; line-height:1.7; }
+    input { width:100%; padding:14px 16px; border-radius:16px; border:none; margin:12px 0; font-size:16px; }
+    button { width:100%; padding:14px; border:none; border-radius:16px; background:#2563eb; color:#fff; font-size:16px; font-weight:800; }
+    .tip { margin-top:12px; color:#93c5fd; font-size:13px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>登录 Ethan Arcade</h1>
+    <p>先输入一个玩家名再进入。这样每个人会用自己的本地前缀记录成绩，能尽量避免串号。</p>
+    <input id="name" placeholder="输入你的名字，例如 Ethan" maxlength="20" />
+    <button id="go">进入游戏站</button>
+    <div class="tip">这是轻量本地登录，不是后端账号系统，但已经能把不同玩家的本地记录分开。</div>
+  </div>
+  <script>
+    const input = document.getElementById('name');
+    const btn = document.getElementById('go');
+    const last = localStorage.getItem('ethan_arcade_user') || '';
+    input.value = last;
+    btn.addEventListener('click', () => {
+      const name = input.value.trim();
+      if (!name) return alert('先输入名字');
+      localStorage.setItem('ethan_arcade_user', name);
+      location.href = '/ethan/';
+    });
+  </script>
+</body>
+</html>

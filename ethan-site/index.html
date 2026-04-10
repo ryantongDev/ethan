@@ -54,10 +54,15 @@
   </style>
 </head>
 <body>
+  <script>
+    const currentUser = localStorage.getItem('ethan_arcade_user');
+    if (!currentUser) location.replace('/ethan/auth/login.html');
+  </script>
   <div class="wrap">
     <div class="hero">
       <div class="tag" id="themeTag">ETHAN ARCADE</div>
       <h1>Ethan 小游戏站</h1>
+      <div class="desc" id="userLine" style="margin-top:-2px;margin-bottom:8px;color:#93c5fd;font-size:14px;"></div>
       <div class="desc">这里是独立挂在 <b>/ethan/</b> 下的小型游戏站，和主项目隔离。现在已经能玩射击、射靶、弹弓、躲避、打架、解压这些小游戏，还加了音效、背景音乐和成就系统。</div>
       <div class="stats">
         <div class="stat">🎮 游戏数量：7</div>
@@ -118,6 +123,7 @@
     root.style.setProperty('--tag-bg', t.tagBg);
     root.style.setProperty('--tag-text', t.tagText);
     themeTag.textContent = t.name;
+    const userLine = document.getElementById('userLine'); if (userLine) userLine.textContent = `当前玩家：${currentUser || '未登录'}`;
   </script>
 </body>
 </html>
