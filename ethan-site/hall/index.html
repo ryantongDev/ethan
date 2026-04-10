@@ -91,6 +91,9 @@
     rows.forEach(item => { const el = document.createElement('div'); el.className = 'card'; el.innerHTML = `<div class="name">${item.name}</div><div class="score">${fmt(item, item.raw)}</div><div class="desc">${item.desc}</div>`; board.appendChild(el); });
 
     const scores = { target:v('ethan-target-best'), balloon:v('ethan-balloon-best'), dodge:v('ethan-dodge-best'), relax:v('ethan-relax-best'), counter:v('simple-counter-value') };
+    const owned = JSON.parse(localStorage.getItem('ethan_arcade_owned_skins') || '[]');
+    const activeSkin = localStorage.getItem('ethan_arcade_active_skin') || 'default';
+    const currentSkinLabel = { default:'默认主题', hunter:'蓝色猎手主题', candy:'糖果气球主题', space:'深空逃生主题', bubble:'清凉泡泡主题' }[activeSkin] || '默认主题';
     const totalScore = Math.floor(scores.target + scores.balloon + scores.relax + scores.counter / 10 + scores.dodge * 5);
     let coins = Number(localStorage.getItem('ethan_arcade_coins') || 0);
     let exchanged = Number(localStorage.getItem('ethan_arcade_exchanged') || 0);
@@ -126,9 +129,6 @@
     if (!unlockedBadges.length) unlockedBadges.push('🌱 初来乍到');
     unlockedBadges.forEach(text => { const el = document.createElement('div'); el.className = 'badge'; el.textContent = text; badges.appendChild(el); });
 
-    const owned = JSON.parse(localStorage.getItem('ethan_arcade_owned_skins') || '[]');
-    const activeSkin = localStorage.getItem('ethan_arcade_active_skin') || 'default';
-    const currentSkinLabel = { default:'默认主题', hunter:'蓝色猎手主题', candy:'糖果气球主题', space:'深空逃生主题', bubble:'清凉泡泡主题' }[activeSkin] || '默认主题';
     const skinCatalog = [
       { id:'default', name:'默认主题', price:0 },
       { id:'hunter', name:'蓝色猎手主题', price:20 },
