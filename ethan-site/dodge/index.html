@@ -237,10 +237,30 @@
       ctx.beginPath(); ctx.arc(420, 160, 110, 0, Math.PI * 2); ctx.fill();
       rocks.forEach(drawRock);
       particles.forEach(p => { ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = '#93c5fd'; ctx.fillRect(p.x, p.y, 6, 6); ctx.globalAlpha = 1; });
+      ctx.save();
+      ctx.translate(player.x, player.y);
       ctx.fillStyle = '#60a5fa';
-      ctx.fillRect(player.x - player.size / 2, player.y - player.size / 2, player.size, player.size);
-      ctx.strokeStyle = '#dbeafe'; ctx.lineWidth = 3;
-      ctx.strokeRect(player.x - player.size / 2, player.y - player.size / 2, player.size, player.size);
+      ctx.beginPath();
+      ctx.moveTo(0, -player.size * 0.72);
+      ctx.lineTo(player.size * 0.52, player.size * 0.55);
+      ctx.lineTo(0, player.size * 0.22);
+      ctx.lineTo(-player.size * 0.52, player.size * 0.55);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#dbeafe';
+      ctx.beginPath();
+      ctx.arc(0, -player.size * 0.1, player.size * 0.16, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(-player.size * 0.12, player.size * 0.16, player.size * 0.24, player.size * 0.22);
+      ctx.fillStyle = 'rgba(96,165,250,0.45)';
+      ctx.beginPath();
+      ctx.moveTo(-player.size * 0.18, player.size * 0.45);
+      ctx.lineTo(0, player.size * 0.9);
+      ctx.lineTo(player.size * 0.18, player.size * 0.45);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
 
       if (over) {
         ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
