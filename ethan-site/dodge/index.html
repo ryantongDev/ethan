@@ -116,7 +116,7 @@
     let player, rocks, particles, dragging, aliveTime, over, last;
 
     function resetGame() {
-      player = { x: 270, y: 820, size: 34 };
+      player = { x: 270, y: 820, size: 34, hitFlash: 0 };
       rocks = [];
       particles = [];
       dragging = false;
@@ -182,6 +182,7 @@
 
     function update(dt) {
       aliveTime += dt;
+      player.hitFlash = Math.max(0, player.hitFlash - dt);
       while (rocks.length < 5 + Math.min(8, Math.floor(aliveTime / 6))) spawnRock();
       rocks.forEach(r => {
         r.y += r.vy * dt;
@@ -211,7 +212,7 @@
       ctx.save();
       ctx.translate(r.x, r.y);
       ctx.rotate(r.angle);
-      ctx.fillStyle = '#ef4444';
+      const grad = ctx.createRadialGradient(0, -r.size*0.2, 4, 0, 0, r.size*1.1); grad.addColorStop(0, '#fca5a5'); grad.addColorStop(0.45, '#ef4444'); grad.addColorStop(1, '#7f1d1d'); ctx.fillStyle = grad;
       ctx.beginPath();
       for (let i = 0; i < 7; i++) {
         const a = (Math.PI * 2 / 7) * i;
@@ -239,7 +240,15 @@
       particles.forEach(p => { ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = '#93c5fd'; ctx.fillRect(p.x, p.y, 6, 6); ctx.globalAlpha = 1; });
       ctx.save();
       ctx.translate(player.x, player.y);
-      ctx.fillStyle = '#60a5fa';
+      const flame = 0.7 + Math.sin(performance.now() * 0.03) * 0.18;
+      ctx.fillStyle = player.hitFlash > 0 ? '#fef08a' : 'rgba(96,165,250,0.45)';
+      ctx.beginPath();
+      ctx.moveTo(-player.size * 0.18, player.size * 0.45);
+      ctx.lineTo(0, player.size * (0.95 + flame * 0.2));
+      ctx.lineTo(player.size * 0.18, player.size * 0.45);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = player.hitFlash > 0 ? '#ffffff' : '#60a5fa';
       ctx.beginPath();
       ctx.moveTo(0, -player.size * 0.72);
       ctx.lineTo(player.size * 0.52, player.size * 0.55);
@@ -253,13 +262,6 @@
       ctx.fill();
       ctx.fillStyle = '#38bdf8';
       ctx.fillRect(-player.size * 0.12, player.size * 0.16, player.size * 0.24, player.size * 0.22);
-      ctx.fillStyle = 'rgba(96,165,250,0.45)';
-      ctx.beginPath();
-      ctx.moveTo(-player.size * 0.18, player.size * 0.45);
-      ctx.lineTo(0, player.size * 0.9);
-      ctx.lineTo(player.size * 0.18, player.size * 0.45);
-      ctx.closePath();
-      ctx.fill();
       ctx.restore();
 
       if (over) {
