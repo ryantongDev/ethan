@@ -45,11 +45,15 @@
       dodge: Number(localStorage.getItem('ethan-dodge-best') || 0),
       relax: Number(localStorage.getItem('ethan-relax-best') || 0),
       counter: Number(localStorage.getItem('simple-counter-value') || 0),
+      fruit: Number(localStorage.getItem('ethan-fruit-best') || 0),
+      mole: Number(localStorage.getItem('ethan-mole-best') || 0),
+      csRange: Number(localStorage.getItem('ethan-cs-range-best') || 0),
+      csHead: Number(localStorage.getItem('ethan-cs-range-headshots-best') || 0),
     };
     const activeSkin = localStorage.getItem('ethan_arcade_active_skin') || 'default';
     const owned = JSON.parse(localStorage.getItem('ethan_arcade_owned_skins') || '[]');
     const currentSkinLabel = { default:'默认主题', hunter:'蓝色猎手主题', candy:'糖果气球主题', space:'深空逃生主题', bubble:'清凉泡泡主题' }[activeSkin] || '默认主题';
-    const totalScore = Math.floor(scores.target + scores.balloon + scores.relax + scores.counter / 10 + scores.dodge * 5);
+    const totalScore = Math.floor(scores.target + scores.balloon + scores.relax + scores.counter / 10 + scores.dodge * 5 + scores.fruit * 2 + scores.mole * 8 + scores.csRange * 2 + scores.csHead * 5);
     let coins = Number(localStorage.getItem('ethan_arcade_coins') || 0);
     let exchanged = Number(localStorage.getItem('ethan_arcade_exchanged') || 0);
     let title = '新手冒险者';
@@ -65,6 +69,9 @@
       ['弹弓打气球', scores.balloon, '最高打爆分数'],
       ['躲避', scores.dodge.toFixed(1) + ' 秒', '最佳存活时间'],
       ['解压', scores.relax, '累计捏爆泡泡数'],
+      ['切水果', scores.fruit, '最高切水果得分'],
+      ['打地鼠', scores.mole, '最高打地鼠得分'],
+      ['CS 打靶', scores.csRange, '最高训练分数'],
     ].forEach(([n,s,d]) => { const el=document.createElement('div'); el.className='card'; el.innerHTML=`<div class="name">${n}</div><div class="score">${s}</div><div class="desc">${d}</div>`; board.appendChild(el); });
 
     [
@@ -73,6 +80,9 @@
       ['生存成长线', scores.dodge, [15,35,60], ['生存者','生存大师','极限幸存者']],
       ['解压成长线', scores.relax, [30,80,160], ['解压学徒','解压之王','泡泡毁灭者']],
       ['数值成长线', scores.counter, [100,300,1000], ['数字狂人','数值掌控者','数字支配者']],
+      ['水果成长线', scores.fruit, [20,50,100], ['水果学徒','水果忍者','果切大师']],
+      ['地鼠成长线', scores.mole, [15,35,60], ['地鼠猎人','地鼠克星','嘉年华王者']],
+      ['CS 成长线', scores.csRange, [80,180,320], ['新兵射手','战术射手','爆头机器']],
     ].forEach(([name, now, steps, labels]) => {
       const unlocked = steps.filter(s => now >= s).length;
       const nextStep = steps[unlocked] || steps[steps.length - 1];
@@ -88,6 +98,9 @@
     if (scores.dodge >= 35) unlockedBadges.push('🌀 极限幸存者');
     if (scores.relax >= 80) unlockedBadges.push('🫧 泡泡毁灭者');
     if (scores.counter >= 300) unlockedBadges.push('🔢 数值掌控者');
+    if (scores.fruit >= 50) unlockedBadges.push('🍉 果切高手');
+    if (scores.mole >= 35) unlockedBadges.push('🔨 地鼠猎手');
+    if (scores.csRange >= 180 || scores.csHead >= 8) unlockedBadges.push('🔫 战术射手');
     if (!unlockedBadges.length) unlockedBadges.push('🌱 初来乍到');
     unlockedBadges.forEach(text => { const el = document.createElement('div'); el.className = 'badge'; el.textContent = text; badges.appendChild(el); });
 
@@ -96,6 +109,9 @@
     if (scores.balloon >= 140) unlockedSkins.push('糖果气球主题');
     if (scores.dodge >= 35) unlockedSkins.push('深空逃生主题');
     if (scores.relax >= 80) unlockedSkins.push('清凉泡泡主题');
+    if (scores.fruit >= 50) unlockedSkins.push('水果狂欢主题');
+    if (scores.mole >= 35) unlockedSkins.push('嘉年华地鼠主题');
+    if (scores.csRange >= 180) unlockedSkins.push('战术靶场主题');
     if (!unlockedSkins.length) unlockedSkins.push('默认主题');
     unlockedSkins.forEach(text => { const el = document.createElement('div'); el.className = 'skin'; el.textContent = text; skins.appendChild(el); });
 
@@ -105,6 +121,9 @@
       { id:'candy', name:'糖果气球主题', price:30 },
       { id:'space', name:'深空逃生主题', price:40 },
       { id:'bubble', name:'清凉泡泡主题', price:25 },
+      { id:'fruit', name:'水果狂欢主题', price:35 },
+      { id:'mole', name:'嘉年华地鼠主题', price:35 },
+      { id:'tactical', name:'战术靶场主题', price:45 },
     ];
     skinCatalog.forEach(item => {
       const ownedFlag = item.id === 'default' ? true : owned.includes(item.id);
@@ -153,6 +172,9 @@
       candy: { bg1:'#db2777', bg2:'#7c3aed', bg3:'#312e81', panel:'rgba(244,114,182,.16)', border:'rgba(251,207,232,.22)', text:'#fce7f3' },
       space: { bg1:'#0f172a', bg2:'#111827', bg3:'#312e81', panel:'rgba(99,102,241,.16)', border:'rgba(165,180,252,.22)', text:'#e0e7ff' },
       bubble: { bg1:'#0891b2', bg2:'#164e63', bg3:'#082f49', panel:'rgba(34,211,238,.14)', border:'rgba(165,243,252,.22)', text:'#cffafe' },
+      fruit: { bg1:'#f97316', bg2:'#b91c1c', bg3:'#7c2d12', panel:'rgba(251,146,60,.14)', border:'rgba(254,215,170,.22)', text:'#ffedd5' },
+      mole: { bg1:'#ca8a04', bg2:'#854d0e', bg3:'#422006', panel:'rgba(250,204,21,.14)', border:'rgba(254,240,138,.22)', text:'#fef3c7' },
+      tactical: { bg1:'#334155', bg2:'#1e293b', bg3:'#0f172a', panel:'rgba(148,163,184,.14)', border:'rgba(226,232,240,.22)', text:'#e2e8f0' },
     };
     const cfg = themes[theme] || themes.default;
     root.style.setProperty('--bg1', cfg.bg1); root.style.setProperty('--bg2', cfg.bg2); root.style.setProperty('--bg3', cfg.bg3); root.style.setProperty('--panel', cfg.panel); root.style.setProperty('--border', cfg.border); root.style.setProperty('--text', cfg.text);
