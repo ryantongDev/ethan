@@ -468,8 +468,8 @@
     }
 
     function drawBackground() {
-      ctx.fillStyle = 'rgba(255,255,255,0.06)';
-      ctx.beginPath(); ctx.arc(440, 120, 90, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(96,165,250,0.10)'; ctx.beginPath(); ctx.arc(440, 120, 90, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle='rgba(147,197,253,0.12)'; for(let r=120;r<420;r+=60){ctx.beginPath();ctx.arc(canvas.width/2, 260, r, 0, Math.PI*2);ctx.stroke();}
       ctx.fillStyle = 'rgba(147,197,253,0.08)';
       ctx.fillRect(0, 720, canvas.width, 240);
       for (let i = 0; i < 65; i++) {
@@ -483,7 +483,7 @@
     function drawPlayer() {
       ctx.save();
       ctx.translate(player.x, player.y);
-      ctx.fillStyle = '#6ec1ff';
+      ctx.fillStyle = '#60a5fa';
       ctx.beginPath();
       ctx.moveTo(0, -24);
       ctx.lineTo(24, 18);
@@ -491,8 +491,8 @@
       ctx.lineTo(-24, 18);
       ctx.closePath();
       ctx.fill();
-      ctx.fillStyle = '#ebf8ff';
-      ctx.fillRect(-5, -10, 10, 24);
+      ctx.fillStyle = '#ebf8ff'; ctx.beginPath(); ctx.arc(0,-6,6,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='rgba(56,189,248,0.45)'; ctx.beginPath(); ctx.moveTo(-8,18); ctx.lineTo(0,30+Math.sin(performance.now()*0.03)*4); ctx.lineTo(8,18); ctx.closePath(); ctx.fill();
       ctx.restore();
     }
 
