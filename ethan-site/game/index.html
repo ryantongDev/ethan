@@ -131,7 +131,7 @@
       <div class="btn shoot" id="shootBtn">发射</div>
       <div class="btn" id="rightBtn">→</div>
     </div>
-    <div class="bottom-tip">点上方“难度”可切换简单 / 普通 / 困难。敌人被打爆后会概率掉道具，碰到就能吃到。</div>
+    <div class="bottom-tip">点上方“难度”可切换简单 / 普通 / 困难。大球掉道具概率更高，简单模式更容易掉，困难模式更难掉。</div>
   </div>
 
   <script>
@@ -232,7 +232,7 @@
       if (type === 'powerup') { o.type = 'triangle'; o.frequency.setValueAtTime(660, audioCtx.currentTime); o.frequency.exponentialRampToValueAtTime(990, audioCtx.currentTime + 0.08); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.07, audioCtx.currentTime + 0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.11); o.start(); o.stop(audioCtx.currentTime + 0.12); }
     }
 
-    const difficultyMap = { easy:{ label:'简单', hp:10, spawnBase:1.5, spawnMin:0.8, spawnScale:0.002, speedMul:0.78, fire:0.1, rapid:0.06, healCap:12, healGain:2, scoreMul:1 }, normal:{ label:'普通', hp:7, spawnBase:1.28, spawnMin:0.62, spawnScale:0.0035, speedMul:1, fire:0.12, rapid:0.07, healCap:10, healGain:2, scoreMul:1.1 }, hard:{ label:'困难', hp:5, spawnBase:1.02, spawnMin:0.42, spawnScale:0.0055, speedMul:1.26, fire:0.14, rapid:0.08, healCap:8, healGain:1, scoreMul:1.3 } };
+    const difficultyMap = { easy:{ label:'简单', hp:10, spawnBase:1.5, spawnMin:0.8, spawnScale:0.002, speedMul:0.78, fire:0.1, rapid:0.06, healCap:12, healGain:2, scoreMul:1, dropMul:1.35 }, normal:{ label:'普通', hp:7, spawnBase:1.28, spawnMin:0.62, spawnScale:0.0035, speedMul:1, fire:0.12, rapid:0.07, healCap:10, healGain:2, scoreMul:1.1, dropMul:1 }, hard:{ label:'困难', hp:5, spawnBase:1.02, spawnMin:0.42, spawnScale:0.0055, speedMul:1.26, fire:0.14, rapid:0.08, healCap:8, healGain:1, scoreMul:1.3, dropMul:0.7 } };
     function cfg(){ return difficultyMap[difficulty] || difficultyMap.normal; }
     const player = {
       x: canvas.width / 2,
@@ -443,7 +443,8 @@
                 }
               }
               enemies.splice(i, 1);
-              if (Math.random() < 0.4) {
+              const baseDrop = e.maxHp >= 4 ? 0.72 : e.maxHp >= 2 ? 0.45 : 0.22;
+              if (Math.random() < baseDrop * cfg().dropMul) {
                 const types = ['rapid','double','heal','big'];
                 const type = types[Math.floor(Math.random() * types.length)];
                 powerups.push({ x: e.x, y: e.y, type, size: 16, speed: 110 });
