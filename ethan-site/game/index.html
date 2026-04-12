@@ -130,7 +130,7 @@
       <div class="btn shoot" id="shootBtn">发射</div>
       <div class="btn" id="rightBtn">→</div>
     </div>
-    <div class="bottom-tip">掉到底部会扣血，生命归零游戏结束。点击发射继续开火。</div>
+    <div class="bottom-tip">敌人被打爆后会概率掉道具，碰到就能吃到。掉到底部会扣血，生命归零游戏结束。</div>
   </div>
 
   <script>
@@ -225,6 +225,7 @@
       if (type === 'shoot') { o.type = 'square'; o.frequency.setValueAtTime(520, audioCtx.currentTime); o.frequency.exponentialRampToValueAtTime(220, audioCtx.currentTime + 0.05); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.04, audioCtx.currentTime + 0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.06); o.start(); o.stop(audioCtx.currentTime + 0.07); }
       if (type === 'boom') { o.type = 'sawtooth'; o.frequency.setValueAtTime(180, audioCtx.currentTime); o.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.12); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.07, audioCtx.currentTime + 0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.13); o.start(); o.stop(audioCtx.currentTime + 0.14); }
       if (type === 'hit') { o.type = 'triangle'; o.frequency.setValueAtTime(140, audioCtx.currentTime); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.09, audioCtx.currentTime + 0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1); o.start(); o.stop(audioCtx.currentTime + 0.11); }
+      if (type === 'powerup') { o.type = 'triangle'; o.frequency.setValueAtTime(660, audioCtx.currentTime); o.frequency.exponentialRampToValueAtTime(990, audioCtx.currentTime + 0.08); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.07, audioCtx.currentTime + 0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.11); o.start(); o.stop(audioCtx.currentTime + 0.12); }
     }
 
     const player = {
@@ -435,10 +436,11 @@
                 }
               }
               enemies.splice(i, 1);
-              if (Math.random() < 0.22) {
+              if (Math.random() < 0.4) {
                 const types = ['rapid','double','heal','big'];
                 const type = types[Math.floor(Math.random() * types.length)];
-                powerups.push({ x: e.x, y: e.y, type, size: 14, speed: 140 });
+                powerups.push({ x: e.x, y: e.y, type, size: 16, speed: 110 });
+                playSound('powerup');
               }
               score += e.maxHp * 10;
               playSound('boom');
