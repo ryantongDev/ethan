@@ -1,0 +1,14 @@
+{
+  "task_id": "youtube-lesson-001",
+  "title": "YouTube lesson 1 pipeline",
+  "channel_id": "1492743740522102804",
+  "status": "进行中",
+  "summary": "已完成下载、抽音频、转写与英文脚本首版，正在补自动汇报工作流与分镜。",
+  "history": [
+    {
+      "time": "2026-04-12 14:17:13",
+      "status": "进行中",
+      "message": "已完成下载、抽音频、转写与英文脚本首版，正在补自动汇报工作流与分镜。"
+    }
+  ]
+}
