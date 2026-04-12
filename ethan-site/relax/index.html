@@ -29,7 +29,7 @@
 </head>
 <body>
   <div class="wrap">
-    <div class="top">
+    <div class="top"><div class="badge" id="difficultyBtn">难度：普通</div>
       <div class="badge" id="count">捏爆：0</div>
       <div class="badge" id="best">最高：0</div>
       <div class="badge">玩法：点泡泡</div>
@@ -192,6 +192,7 @@
 
     reset();
     requestAnimationFrame(loop);
-  </script>
+  const difficultyBtn = document.getElementById('difficultyBtn'); let difficulty = localStorage.getItem('ethan-relax-difficulty') || 'normal'; const diffLabelMap={easy:'简单',normal:'普通',hard:'困难'}; if(difficultyBtn){ difficultyBtn.textContent='难度：'+diffLabelMap[difficulty]; difficultyBtn.addEventListener('click',()=>{ difficulty = difficulty==='easy'?'normal':difficulty==='normal'?'hard':'easy'; localStorage.setItem('ethan-relax-difficulty', difficulty); difficultyBtn.textContent='难度：'+diffLabelMap[difficulty]; location.reload(); }); }
+</script>
 </body>
 </html>

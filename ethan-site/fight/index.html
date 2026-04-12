@@ -30,7 +30,7 @@
 </head>
 <body>
   <div class="wrap">
-    <div class="top">
+    <div class="top"><div class="badge" id="difficultyBtn">难度：普通</div>
       <div class="badge" id="playerHp">你：100</div>
       <div class="badge" id="enemyHp">对手：100</div>
       <div class="badge" id="status">状态：战斗中</div>
@@ -253,6 +253,7 @@
     }
     resetGame();
     requestAnimationFrame(loop);
-  </script>
+  const difficultyBtn = document.getElementById('difficultyBtn'); let difficulty = localStorage.getItem('ethan-fight-difficulty') || 'normal'; const diffLabelMap={easy:'简单',normal:'普通',hard:'困难'}; if(difficultyBtn){ difficultyBtn.textContent='难度：'+diffLabelMap[difficulty]; difficultyBtn.addEventListener('click',()=>{ difficulty = difficulty==='easy'?'normal':difficulty==='normal'?'hard':'easy'; localStorage.setItem('ethan-fight-difficulty', difficulty); difficultyBtn.textContent='难度：'+diffLabelMap[difficulty]; location.reload(); }); }
+</script>
 </body>
 </html>

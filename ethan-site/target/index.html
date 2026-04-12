@@ -30,7 +30,7 @@
 </head>
 <body>
   <div class="wrap">
-    <div class="top">
+    <div class="top"><div class="badge" id="difficultyBtn">难度：普通</div>
       <div class="badge" id="score">分数：0</div>
       <div class="badge" id="timer">时间：30</div>
       <div class="badge" id="best">最高：0</div>
@@ -128,6 +128,7 @@
     function drawScene() { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#fff'; for (let i = 0; i < 8; i++) ctx.fillRect(0, 680 + i * 36, canvas.width, 18); ctx.fillStyle = '#166534'; ctx.fillRect(0, 700, canvas.width, 260); drawTarget(); pops.forEach((p) => { ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color; ctx.font = 'bold 28px Arial'; ctx.fillText(p.text, p.x - 18, p.y - (1 - p.life) * 50); ctx.globalAlpha = 1; }); if (!playing) { ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = 'bold 46px Arial'; ctx.fillText('时间到', canvas.width / 2, canvas.height / 2 - 30); ctx.font = '26px Arial'; ctx.fillText(`本局得分：${score}`, canvas.width / 2, canvas.height / 2 + 20); ctx.fillText('点“重新开始”再来一局', canvas.width / 2, canvas.height / 2 + 62); ctx.textAlign = 'left'; } }
     function loop(now) { const dt = Math.min(0.033, (now - lastTick) / 1000); lastTick = now; if (playing) { timeLeft -= dt; if (timeLeft <= 0) { timeLeft = 0; playing = false; } moveTarget(dt); } for (let i = pops.length - 1; i >= 0; i--) { pops[i].life -= dt; if (pops[i].life <= 0) pops.splice(i, 1); } updateHud(); drawScene(); requestAnimationFrame(loop); }
     updateHud(); requestAnimationFrame(loop);
-  </script>
+  const difficultyBtn = document.getElementById('difficultyBtn'); let difficulty = localStorage.getItem('ethan-target-difficulty') || 'normal'; const diffLabelMap={easy:'简单',normal:'普通',hard:'困难'}; if(difficultyBtn){ difficultyBtn.textContent='难度：'+diffLabelMap[difficulty]; difficultyBtn.addEventListener('click',()=>{ difficulty = difficulty==='easy'?'normal':difficulty==='normal'?'hard':'easy'; localStorage.setItem('ethan-target-difficulty', difficulty); difficultyBtn.textContent='难度：'+diffLabelMap[difficulty]; location.reload(); }); }
+</script>
 </body>
 </html>
