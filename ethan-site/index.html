@@ -120,8 +120,12 @@
       candy: { bg1:'#db2777', bg2:'#7c3aed', bg3:'#312e81', card:'rgba(244,114,182,.16)', border:'rgba(251,207,232,.22)', text:'#fce7f3', tagBg:'rgba(244,114,182,.25)', tagText:'#fce7f3', name:'糖果气球主题' },
       space: { bg1:'#0f172a', bg2:'#111827', bg3:'#312e81', card:'rgba(99,102,241,.16)', border:'rgba(165,180,252,.22)', text:'#e0e7ff', tagBg:'rgba(99,102,241,.25)', tagText:'#e0e7ff', name:'深空逃生主题' },
       bubble: { bg1:'#0891b2', bg2:'#164e63', bg3:'#082f49', card:'rgba(34,211,238,.14)', border:'rgba(165,243,252,.22)', text:'#cffafe', tagBg:'rgba(34,211,238,.22)', tagText:'#cffafe', name:'清凉泡泡主题' },
+      fruit: { bg1:'#f97316', bg2:'#b91c1c', bg3:'#7c2d12', card:'rgba(251,146,60,.16)', border:'rgba(254,215,170,.22)', text:'#ffedd5', tagBg:'rgba(249,115,22,.22)', tagText:'#ffedd5', name:'水果狂欢主题' },
+      mole: { bg1:'#ca8a04', bg2:'#854d0e', bg3:'#422006', card:'rgba(250,204,21,.16)', border:'rgba(254,240,138,.22)', text:'#fef3c7', tagBg:'rgba(250,204,21,.22)', tagText:'#fef3c7', name:'嘉年华地鼠主题' },
+      tactical: { bg1:'#334155', bg2:'#1e293b', bg3:'#0f172a', card:'rgba(148,163,184,.16)', border:'rgba(226,232,240,.22)', text:'#e2e8f0', tagBg:'rgba(148,163,184,.22)', tagText:'#e2e8f0', name:'战术靶场主题' },
+      duel: { bg1:'#7f1d1d', bg2:'#1f2937', bg3:'#111827', card:'rgba(239,68,68,.16)', border:'rgba(252,165,165,.22)', text:'#fee2e2', tagBg:'rgba(239,68,68,.22)', tagText:'#fee2e2', name:'对枪战场主题' },
     };
-    const t = themes[theme];
+    const t = themes[theme] || themes.default;
     root.style.setProperty('--bg1', t.bg1);
     root.style.setProperty('--bg2', t.bg2);
     root.style.setProperty('--bg3', t.bg3);
