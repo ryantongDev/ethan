@@ -26,10 +26,10 @@
     <div class="badge" id="round">回合：1</div>
   </div>
   <div class="title">CS 风格轻量对枪</div>
-  <div class="sub">直接点敌人射击，掩体会挡子弹，触屏更稳</div>
+  <div class="sub">直接点敌人射击，先做成稳定可玩的触屏版</div>
   <canvas id="game" width="540" height="960"></canvas>
   <div class="actions"><a class="back" href="/ethan/">返回首页</a><button class="btn" id="restart">重新开始</button></div>
-  <div class="tip">直接点敌人身体就会开枪，掩体挡住时打不中。</div>
+  <div class="tip">直接点敌人就会掉血，先保证触屏能稳定玩。</div>
 </div>
 <script>
 const c=document.getElementById('game'),ctx=c.getContext('2d');
@@ -46,7 +46,7 @@ function reset(){player={hp:100};enemy={x:400,y:340,w:54,h:110,hp:cfg().enemyHp,
 function hud(){php.textContent=`你：${Math.max(0,player.hp)}`;ehp.textContent=`敌人：${Math.max(0,enemy.hp)}`;roundEl.textContent=`回合：${round}`;}
 function pos(e){const r=c.getBoundingClientRect(),p=e.touches?e.touches[0]:e;return{x:(p.clientX-r.left)*(c.width/r.width),y:(p.clientY-r.top)*(c.height/r.height)}}
 function blocked(x1,y1,x2,y2){return Math.min(y1,y2)<cover.y+cover.h/2&&Math.max(y1,y2)>cover.y-cover.h/2&&Math.min(x1,x2)<cover.x+cover.w/2&&Math.max(x1,x2)>cover.x-cover.w/2;}
-function fire(aimPoint){if(over)return;const p=aimPoint;impacts.push({x:p.x,y:p.y,life:.3,good:false});const hitBoxPad = difficulty === 'easy' ? 36 : difficulty === 'normal' ? 24 : 12; const hit=p.x>enemy.x-enemy.w/2-hitBoxPad&&p.x<enemy.x+enemy.w/2+hitBoxPad&&p.y>enemy.y-enemy.h/2-hitBoxPad&&p.y<enemy.y+enemy.h/2+hitBoxPad&&!blocked(270,900,p.x,p.y);if(hit){enemy.hp-=20;impacts[impacts.length-1].good=true;s(720,.08);if(enemy.hp<=0){round++;localStorage.setItem('ethan-cs-duel-best', String(Math.max(round, Number(localStorage.getItem('ethan-cs-duel-best')||0))));enemy.hp=cfg().enemyHp;enemy.x=120+Math.random()*300;player.hp=Math.min(100,player.hp+cfg().healOnWin);}}else s(200,.05);hud();}
+function fire(aimPoint){if(over)return;const p=aimPoint;impacts.push({x:p.x,y:p.y,life:.3,good:false});const hitBoxPad = difficulty === 'easy' ? 44 : difficulty === 'normal' ? 32 : 20; const hit=p.x>enemy.x-enemy.w/2-hitBoxPad&&p.x<enemy.x+enemy.w/2+hitBoxPad&&p.y>enemy.y-enemy.h/2-hitBoxPad&&p.y<enemy.y+enemy.h/2+hitBoxPad;if(hit){enemy.hp-=20;impacts[impacts.length-1].good=true;s(720,.08);if(enemy.hp<=0){round++;localStorage.setItem('ethan-cs-duel-best', String(Math.max(round, Number(localStorage.getItem('ethan-cs-duel-best')||0))));enemy.hp=cfg().enemyHp;enemy.x=120+Math.random()*300;player.hp=Math.min(100,player.hp+cfg().healOnWin);}}else s(200,.05);hud();}
 function tapFire(e){ const p = pos(e.changedTouches ? { touches:[e.changedTouches[0]] } : e); fire(p); e.preventDefault(); }
 c.addEventListener('click',tapFire);
 c.addEventListener('touchend',tapFire,{passive:false});
