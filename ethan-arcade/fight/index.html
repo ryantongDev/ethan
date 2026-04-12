@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>街机格斗</title>
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { margin: 0; min-height: 100vh; background: linear-gradient(180deg, #111827, #1f2937 55%, #7c3aed); font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif; color: #fff; display: flex; justify-content: center; align-items: center; padding: 16px; }
+    .wrap { width: min(100%, 560px); }
+    .top { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+    .badge { background: linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,.09)); border: 1px solid rgba(255,255,255,.18); border-radius: 999px; padding: 8px 12px; font-weight: 700; color: #e9d5ff; }
+    .title { text-align: center; font-size: 26px; font-weight: 900; margin: 4px 0 6px; }
+    .sub { text-align: center; color: #ddd6fe; font-size: 13px; margin-bottom: 12px; }
+    canvas { width: 100%; aspect-ratio: 9/16; display: block; border-radius: 22px; background: linear-gradient(180deg, #0f172a 0%, #312e81 42%, #111827 75%, #3f3f46 100%); border: 2px solid rgba(255,255,255,.28); box-shadow: 0 18px 44px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.10); }
+    .controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 12px; }
+    button, .back { border: none; border-radius: 16px; padding: 14px; font-size: 16px; font-weight: 800; color: #fff; background: linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,.09)); cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; }
+    .attack { background: linear-gradient(180deg, #fb7185, #e11d48); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="badge" id="difficultyBtn">难度：普通</div>
+      <div class="badge" id="playerHp">你：100</div>
+      <div class="badge" id="enemyHp">对手：100</div>
+      <div class="badge" id="status">状态：战斗中</div>
+    </div>
+    <div class="title">街机格斗</div>
+    <div class="sub">简单模式下敌人会更弱，还会掉血包，终于不再是纯挨打了</div>
+    <canvas id="game" width="540" height="960"></canvas>
+    <div class="controls">
+      <button id="leftBtn">←</button>
+      <button class="attack" id="attackBtn">攻击</button>
+      <button id="rightBtn">→</button>
+    </div>
+    <div class="controls" style="grid-template-columns: 1fr 1fr 1fr;">
+      <button id="musicBtn">音乐：关</button>
+      <a class="back" href="/ethan/">返回首页</a>
+      <button id="restart">重新开始</button>
+    </div>
+  </div>
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const playerHpEl = document.getElementById('playerHp');
+    const enemyHpEl = document.getElementById('enemyHp');
+    const statusEl = document.getElementById('status');
+    const leftBtn = document.getElementById('leftBtn');
+    const rightBtn = document.getElementById('rightBtn');
+    const attackBtn = document.getElementById('attackBtn');
+    const restartBtn = document.getElementById('restart');
+    const difficultyBtn = document.getElementById('difficultyBtn');
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const difficultyMap = {
+      easy: { label:'简单', playerHp:120, enemyHp:72, enemySpeed:82, enemyDamage:6, playerDamage:16, enemyCd:1.1, playerCd:0.45, healDrop:0.7, healAmount:18 },
+      normal: { label:'普通', playerHp:100, enemyHp:100, enemySpeed:110, enemyDamage:10, playerDamage:12, enemyCd:0.72, playerCd:0.6, healDrop:0.28, healAmount:14 },
+      hard: { label:'困难', playerHp:92, enemyHp:120, enemySpeed:138, enemyDamage:14, playerDamage:10, enemyCd:0.5, playerCd:0.7, healDrop:0.12, healAmount:10 },
+    };
+    let difficulty = localStorage.getItem('ethan-fight-difficulty') || 'normal';
+    function cfg(){ return difficultyMap[difficulty] || difficultyMap.normal; }
+    function refreshDifficultyBtn(){ difficultyBtn.textContent = `难度：${cfg().label}`; }
+    difficultyBtn.addEventListener('click', () => { difficulty = difficulty === 'easy' ? 'normal' : difficulty === 'normal' ? 'hard' : 'easy'; localStorage.setItem('ethan-fight-difficulty', difficulty); refreshDifficultyBtn(); resetGame(); });
+    function endJingle(kind) { if (audioCtx.state === 'suspended') audioCtx.resume(); const seq = kind === 'win' ? [523.25,659.25,783.99] : [392,311.13,220]; const types = kind === 'win' ? ['triangle','triangle','sine'] : ['sawtooth','triangle','sine']; seq.forEach((f, i) => { const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.type = types[i]; o.frequency.setValueAtTime(f, audioCtx.currentTime + i * 0.16); g.gain.setValueAtTime(0.001, audioCtx.currentTime + i * 0.16); g.gain.exponentialRampToValueAtTime(0.08, audioCtx.currentTime + i * 0.16 + 0.02); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.16 + 0.18); o.connect(g); g.connect(audioCtx.destination); o.start(audioCtx.currentTime + i * 0.16); o.stop(audioCtx.currentTime + i * 0.16 + 0.2); }); }
+    const musicBtn = document.getElementById('musicBtn');
+    let musicOn = false, musicTimer = null;
+    function stopMusic(){ musicOn = false; musicBtn.textContent = '音乐：关'; if (musicTimer) { clearTimeout(musicTimer); musicTimer = null; } }
+    function bgNote(freq = 440, dur = 0.18, type = 'sine', gainValue = 0.014) { if (audioCtx.state === 'suspended') audioCtx.resume(); const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.type = type; o.frequency.setValueAtTime(freq, audioCtx.currentTime); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(gainValue, audioCtx.currentTime + 0.02); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + dur + 0.02); }
+    function musicLoop(){ if (!musicOn) return; const lead = [220,293.66,329.63,392,329.63,293.66,261.63,220]; const bass = [110,146.83,164.81,196,164.81,146.83,130.81,110]; lead.forEach((f, i) => setTimeout(() => bgNote(f, 0.26, 'square', 0.012), i * 240)); bass.forEach((f, i) => setTimeout(() => bgNote(f, 0.34, 'triangle', 0.008), i * 240 + 60)); musicTimer = setTimeout(musicLoop, 2200); }
+    musicBtn.addEventListener('click', () => { musicOn = !musicOn; musicBtn.textContent = `音乐：${musicOn ? '开' : '关'}`; if (musicOn) musicLoop(); else if (musicTimer) { clearTimeout(musicTimer); musicTimer = null; } });
+    function sound(kind){ if (audioCtx.state === 'suspended') audioCtx.resume(); const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); if (kind==='punch'){ o.type='square'; o.frequency.setValueAtTime(200, audioCtx.currentTime); o.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime+0.08); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.07, audioCtx.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+0.09); } else if (kind==='heal'){ o.type='triangle'; o.frequency.setValueAtTime(520, audioCtx.currentTime); o.frequency.exponentialRampToValueAtTime(760, audioCtx.currentTime+0.08); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.06, audioCtx.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+0.1); } else { o.type='triangle'; o.frequency.setValueAtTime(440, audioCtx.currentTime); o.frequency.linearRampToValueAtTime(660, audioCtx.currentTime+0.12); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.06, audioCtx.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+0.14); } o.start(); o.stop(audioCtx.currentTime+0.15); }
+    const touch = { left:false, right:false };
+    let player, enemy, effects, pickups, over, last;
+    function resetGame(){ const c = cfg(); player = { x:120, y:760, hp:c.playerHp, maxHp:c.playerHp, color:'#60a5fa', attackCd:0, attacking:0 }; enemy = { x:420, y:760, hp:c.enemyHp, maxHp:c.enemyHp, color:'#f87171', attackCd:0, attacking:0 }; effects = []; pickups = []; over = false; last = performance.now(); refreshDifficultyBtn(); hud(); }
+    function hud(){ playerHpEl.textContent = `你：${Math.max(0, Math.ceil(player.hp))}`; enemyHpEl.textContent = `对手：${Math.max(0, Math.ceil(enemy.hp))}`; statusEl.textContent = over ? `状态：${player.hp <= 0 ? '你输了' : '你赢了'}` : '状态：战斗中'; }
+    function bindHold(el, key){ const on = e => { touch[key] = true; e.preventDefault(); }; const off = e => { touch[key] = false; e.preventDefault(); }; el.addEventListener('touchstart', on, { passive:false }); el.addEventListener('touchend', off, { passive:false }); el.addEventListener('touchcancel', off, { passive:false }); el.addEventListener('mousedown', on); el.addEventListener('mouseup', off); el.addEventListener('mouseleave', off); }
+    bindHold(leftBtn, 'left'); bindHold(rightBtn, 'right');
+    function attack(attacker, defender, damage){ if (attacker.attackCd > 0 || over) return; sound('punch'); attacker.attackCd = attacker === player ? cfg().playerCd : cfg().enemyCd; attacker.attacking = 0.18; if (Math.abs(attacker.x - defender.x) < 110) { defender.hp -= damage; effects.push({ x:defender.x, y:defender.y - 40, text:`-${damage}`, life:0.5, color:'#fef08a' }); if (defender === enemy && Math.random() < cfg().healDrop) pickups.push({ x: enemy.x, y: 700, type:'heal', life:6 }); if (defender.hp <= 0) { over = true; stopMusic(); sound('win'); endJingle(attacker === player ? 'win' : 'lose'); } } hud(); }
+    attackBtn.addEventListener('click', () => attack(player, enemy, cfg().playerDamage));
+    restartBtn.addEventListener('click', (e) => { e.preventDefault(); resetGame(); });
+    function update(dt){ player.attackCd = Math.max(0, player.attackCd - dt); enemy.attackCd = Math.max(0, enemy.attackCd - dt); player.attacking = Math.max(0, player.attacking - dt); enemy.attacking = Math.max(0, enemy.attacking - dt); if (!over) { if (touch.left) player.x -= 240 * dt; if (touch.right) player.x += 240 * dt; player.x = Math.max(50, Math.min(canvas.width - 50, player.x)); const dist = enemy.x - player.x; if (Math.abs(dist) > 105) enemy.x += Math.sign(player.x - enemy.x) * cfg().enemySpeed * dt; else if (enemy.attackCd <= 0) attack(enemy, player, cfg().enemyDamage); }
+      pickups.forEach(p => p.life -= dt);
+      for (let i = pickups.length - 1; i >= 0; i--) { const p = pickups[i]; if (Math.abs(p.x - player.x) < 42 && Math.abs(p.y - player.y) < 90) { player.hp = Math.min(player.maxHp, player.hp + cfg().healAmount); effects.push({ x:p.x, y:p.y - 20, text:`+${cfg().healAmount}`, life:0.6, color:'#86efac' }); sound('heal'); pickups.splice(i, 1); hud(); continue; } if (p.life <= 0) pickups.splice(i, 1); }
+      effects.forEach(e => e.life -= dt);
+      for (let i = effects.length - 1; i >= 0; i--) if (effects[i].life <= 0) effects.splice(i, 1);
+      if (!over && (player.hp <= 0 || enemy.hp <= 0)) over = true;
+      hud();
+    }
+    function fighter(f, facing){ ctx.fillStyle = f.color; const punch = f.attacking > 0 ? 22 : 0; ctx.fillRect(f.x - 18, f.y - 90, 36, 54); ctx.fillRect(f.x - 26, f.y - 36, 52, 60); ctx.fillRect(f.x - 20, f.y + 24, 14, 48); ctx.fillRect(f.x + 6, f.y + 24, 14, 48); ctx.fillRect(f.x - 34, f.y - 20, 12, 42); ctx.fillRect(f.x + 22, f.y - 20, 12 + punch, 18); ctx.fillStyle = '#111827'; ctx.fillRect(f.x - 10, f.y - 74, 7, 7); ctx.fillRect(f.x + 3, f.y - 74, 7, 7); ctx.fillStyle = '#fff'; ctx.fillRect(f.x - 40, f.y - 118, 80, 10); ctx.fillStyle = facing === 'right' ? '#60a5fa' : '#f87171'; ctx.fillRect(f.x - 40, f.y - 118, 80 * Math.max(0, f.hp) / f.maxHp, 10); }
+    function draw(){ ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#1f2937'; ctx.fillRect(0, 0, canvas.width, 260); ctx.fillStyle='rgba(255,255,255,.05)'; for(let i=0;i<7;i++)ctx.fillRect(30+i*70,80+(i%2)*18,40,170); ctx.fillStyle='rgba(244,114,182,.08)'; ctx.fillRect(0,300,canvas.width,12); ctx.fillStyle = '#374151'; ctx.fillRect(0, 820, canvas.width, 140); ctx.fillStyle = '#4b5563'; for (let i = 0; i < 8; i++) ctx.fillRect(i * 80, 840, 40, 120); pickups.forEach(p => { ctx.fillStyle = '#22c55e'; ctx.beginPath(); ctx.arc(p.x, p.y, 18, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#fff'; ctx.fillRect(p.x - 8, p.y - 2, 16, 4); ctx.fillRect(p.x - 2, p.y - 8, 4, 16); }); fighter(player, 'right'); fighter(enemy, 'left'); effects.forEach(e => { ctx.globalAlpha = Math.max(0, e.life); ctx.fillStyle = e.color; ctx.font = 'bold 28px Arial'; ctx.fillText(e.text, e.x - 18, e.y - (1 - e.life) * 40); ctx.globalAlpha = 1; }); if (over) { ctx.fillStyle = 'rgba(0,0,0,.42)'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = 'bold 46px Arial'; ctx.fillText(player.hp <= 0 ? '你输了' : '你赢了', canvas.width/2, canvas.height/2 - 20); ctx.font = '26px Arial'; ctx.fillText('点“重新开始”继续', canvas.width/2, canvas.height/2 + 30); ctx.textAlign = 'left'; } }
+    function loop(now){ const dt = Math.min(0.033, (now - last) / 1000); last = now; update(dt); draw(); requestAnimationFrame(loop); }
+    resetGame(); requestAnimationFrame(loop);
+  </script>
+</body>
+</html>

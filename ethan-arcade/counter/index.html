@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>升级计数器</title>
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: radial-gradient(circle at top, #2563eb, #0f172a 68%);
+      font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: white;
+    }
+    .card {
+      width: min(100%, 460px);
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.18);
+      backdrop-filter: blur(16px);
+      border-radius: 28px;
+      padding: 24px;
+      box-shadow: 0 18px 48px rgba(0,0,0,0.28);
+      text-align: center;
+    }
+    h1 { margin: 0 0 8px; font-size: 30px; }
+    .sub { margin-bottom: 16px; color: #dbeafe; font-size: 14px; }
+    .num {
+      font-size: 82px;
+      font-weight: 900;
+      margin: 16px 0 22px;
+      line-height: 1;
+      transition: transform .12s ease;
+      word-break: break-all;
+    }
+    .num.bump { transform: scale(1.08); }
+    .row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 12px; }
+    .row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+    button, input {
+      border: none;
+      border-radius: 18px;
+      padding: 16px 14px;
+      font-size: 18px;
+      font-weight: 800;
+    }
+    input { width: 100%; text-align: center; background: rgba(255,255,255,.14); color: white; }
+    button { color: white; cursor: pointer; transition: transform .08s ease, opacity .2s ease; }
+    button:active { transform: scale(0.97); }
+    .plus { background: linear-gradient(180deg, #22c55e, #16a34a); }
+    .minus { background: linear-gradient(180deg, #f97316, #ea580c); }
+    .soft { background: rgba(255,255,255,0.14); }
+    .copy { background: linear-gradient(180deg, #38bdf8, #0284c7); }
+    .small { margin-top: 12px; color: #bfdbfe; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>升级计数器</h1>
+    <div class="sub">实用版 + 好看版，支持步进、自定义、自动保存</div>
+    <div class="num" id="count">0</div>
+
+    <div class="row3">
+      <button class="minus" id="minus5">-5</button>
+      <button class="soft" id="reset">重置</button>
+      <button class="plus" id="plus5">+5</button>
+    </div>
+
+    <div class="row">
+      <button class="minus" id="minus">-1</button>
+      <button class="plus" id="plus">+1</button>
+    </div>
+
+    <div class="row">
+      <input id="step" type="number" value="10" />
+      <button class="copy" id="copy">复制结果</button>
+    </div>
+
+    <div class="row">
+      <button class="minus" id="minusCustom">-步进</button>
+      <button class="plus" id="plusCustom">+步进</button>
+    </div>
+
+    <div class="small">数字会自动保存，刷新页面不会丢</div>
+  </div>
+
+  <script>
+    const countEl = document.getElementById('count');
+    const stepEl = document.getElementById('step');
+    const KEY = 'simple-counter-value';
+    const STEP_KEY = 'simple-counter-step';
+    let count = Number(localStorage.getItem(KEY) || 0);
+    let step = Number(localStorage.getItem(STEP_KEY) || 10);
+    stepEl.value = step;
+
+    function save() {
+      localStorage.setItem(KEY, String(count));
+      localStorage.setItem(STEP_KEY, String(step));
+    }
+
+    function bump() {
+      countEl.classList.remove('bump');
+      void countEl.offsetWidth;
+      countEl.classList.add('bump');
+    }
+
+    function render() {
+      countEl.textContent = count;
+      bump();
+      save();
+    }
+
+    function change(v) {
+      count += v;
+      render();
+    }
+
+    document.getElementById('plus').addEventListener('click', () => change(1));
+    document.getElementById('minus').addEventListener('click', () => change(-1));
+    document.getElementById('plus5').addEventListener('click', () => change(5));
+    document.getElementById('minus5').addEventListener('click', () => change(-5));
+    document.getElementById('reset').addEventListener('click', () => { count = 0; render(); });
+    document.getElementById('plusCustom').addEventListener('click', () => { step = Number(stepEl.value || 0); change(step); });
+    document.getElementById('minusCustom').addEventListener('click', () => { step = Number(stepEl.value || 0); change(-step); });
+    stepEl.addEventListener('change', () => { step = Number(stepEl.value || 0); save(); });
+    document.getElementById('copy').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(String(count));
+        alert('已复制：' + count);
+      } catch {
+        alert('复制失败');
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>

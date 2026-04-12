@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>弹弓气球场</title>
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #0f172a, #1d4ed8 55%, #7dd3fc);
+      font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+    .wrap { width: min(100%, 560px); }
+    .top { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+    .badge { background: linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,.09)); border: 1px solid rgba(255,255,255,.18); border-radius: 999px; padding: 8px 12px; font-weight: 700; color: #dbeafe; }
+    .title { text-align: center; font-size: 26px; font-weight: 900; margin: 4px 0 6px; }
+    .sub { text-align: center; color: #bfdbfe; font-size: 13px; margin-bottom: 12px; }
+    canvas { width: 100%; aspect-ratio: 9/16; display: block; border-radius: 22px; background: linear-gradient(180deg, #7dd3fc 0%, #bfdbfe 30%, #fde68a 55%, #86efac 56%, #22c55e 100%); border: 2px solid rgba(255,255,255,.28); box-shadow: 0 18px 44px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.10); box-shadow: 0 16px 40px rgba(0,0,0,.28); }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; position: relative; z-index: 5; }
+    button, .back { border: none; border-radius: 16px; padding: 14px; font-size: 16px; font-weight: 800; color: #fff; background: linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,.09)); cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; touch-action: manipulation; position: relative; z-index: 6; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top"><div class="badge" id="difficultyBtn">难度：普通</div>
+      <div class="badge" id="score">分数：0</div>
+      <div class="badge" id="balls">石子：12</div>
+      <div class="badge" id="best">最高：0</div>
+    </div>
+    <div class="title">弹弓气球场</div>
+    <div class="sub">游乐场风格弹弓摊位，打爆气球冲高分</div>
+    <canvas id="game" width="540" height="960"></canvas>
+    <div class="actions">
+      <button id="musicBtn">音乐：关</button>
+      <a class="back" href="/ethan/">返回首页</a>
+      <button id="restart">重新开始</button>
+    </div>
+  </div>
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('score');
+    const ballsEl = document.getElementById('balls');
+    const bestEl = document.getElementById('best');
+    const restartBtn = document.getElementById('restart');
+    const BEST_KEY = 'ethan-balloon-best';
+    const sling = { x: 100, y: 820 };
+    let score = 0, ammo = 12, best = Number(localStorage.getItem(BEST_KEY) || 0), dragging = false, gameOver = false;
+    let projectile = null;
+    let aim = { x: sling.x, y: sling.y };
+    const balloons = [];
+    const particles = [];
+    let last = performance.now();
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function endJingle(kind) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const seq = kind === 'win' ? [523.25, 659.25, 783.99] : [392, 311.13, 220];
+      const types = kind === 'win' ? ['triangle','triangle','sine'] : ['sawtooth','triangle','sine'];
+      seq.forEach((f, i) => {
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.type = types[i];
+        o.frequency.setValueAtTime(f, audioCtx.currentTime + i * 0.16);
+        g.gain.setValueAtTime(0.001, audioCtx.currentTime + i * 0.16);
+        g.gain.exponentialRampToValueAtTime(0.08, audioCtx.currentTime + i * 0.16 + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.16 + 0.18);
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(audioCtx.currentTime + i * 0.16);
+        o.stop(audioCtx.currentTime + i * 0.16 + 0.2);
+      });
+    }
+    const musicBtn = document.getElementById('musicBtn');
+    let musicOn = false;
+    let musicTimer = null;
+    function stopMusic() {
+      musicOn = false;
+      if (musicBtn) musicBtn.textContent = '音乐：关';
+      if (musicTimer) { clearTimeout(musicTimer); musicTimer = null; }
+    }
+    function bgNote(freq = 440, dur = 0.18, type = 'sine', gainValue = 0.014) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      g.gain.setValueAtTime(0.001, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(gainValue, audioCtx.currentTime + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime + dur + 0.02);
+    }
+    function musicLoop() {
+      if (!musicOn) return;
+      const lead = [523.25, 659.25, 587.33, 523.25, 659.25, 698.46, 587.33, 523.25];
+      const bass = [261.63, 329.63, 293.66, 261.63, 329.63, 349.23, 293.66, 261.63];
+      lead.forEach((f, i) => setTimeout(() => bgNote(f, 0.26, 'triangle', 0.012), i * 240));
+      bass.forEach((f, i) => setTimeout(() => bgNote(f, 0.34, 'sine', 0.008), i * 240 + 60));
+      musicTimer = setTimeout(musicLoop, 2200);
+    }
+    function toggleMusic() {
+      musicOn = !musicOn;
+      musicBtn.textContent = `音乐：${musicOn ? '开' : '关'}`;
+      if (musicOn) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        musicLoop();
+      } else if (musicTimer) {
+        clearTimeout(musicTimer);
+        musicTimer = null;
+      }
+    }
+    musicBtn.addEventListener('click', toggleMusic);
+    musicBtn.addEventListener('touchend', (e) => { e.preventDefault(); toggleMusic(); }, { passive: false });
+
+    function playSound(kind) { if (audioCtx.state === 'suspended') audioCtx.resume(); const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); if (kind==='launch') { o.type='triangle'; o.frequency.setValueAtTime(240, audioCtx.currentTime); o.frequency.linearRampToValueAtTime(420, audioCtx.currentTime+0.08); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.05, audioCtx.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+0.09); o.start(); o.stop(audioCtx.currentTime+0.1);} if (kind==='pop') { o.type='square'; o.frequency.setValueAtTime(620, audioCtx.currentTime); o.frequency.exponentialRampToValueAtTime(180, audioCtx.currentTime+0.08); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.06, audioCtx.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+0.09); o.start(); o.stop(audioCtx.currentTime+0.1);} }
+
+    function spawnBalloon() {
+      const colors = ['#fb7185', '#f59e0b', '#60a5fa', '#a78bfa', '#34d399'];
+      balloons.push({
+        x: 80 + Math.random() * 380,
+        y: 1030 + Math.random() * 400,
+        r: 28 + Math.random() * 18,
+        vy: 40 + Math.random() * 40 + score * 0.1,
+        drift: (Math.random() - 0.5) * 30,
+        color: colors[Math.floor(Math.random() * colors.length)],
+      });
+    }
+
+    for (let i = 0; i < 5; i++) spawnBalloon();
+
+    function hud() {
+      scoreEl.textContent = `分数：${score}`;
+      ballsEl.textContent = `石子：${ammo}`;
+      bestEl.textContent = `最高：${best}`;
+    }
+
+    function resetGame() {
+      score = 0; ammo = 12; gameOver = false; dragging = false; projectile = null; aim = { x: sling.x, y: sling.y };
+      balloons.length = 0; particles.length = 0;
+      for (let i = 0; i < 5; i++) spawnBalloon();
+      hud();
+    }
+
+    function posFromEvent(e) {
+      const rect = canvas.getBoundingClientRect();
+      const p = e.touches ? e.touches[0] : e;
+      return { x: (p.clientX - rect.left) * (canvas.width / rect.width), y: (p.clientY - rect.top) * (canvas.height / rect.height) };
+    }
+
+    function startDrag(e) {
+      if (gameOver || projectile || ammo <= 0) return;
+      const p = posFromEvent(e);
+      if (Math.hypot(p.x - sling.x, p.y - sling.y) < 100) {
+        dragging = true;
+        aim = p;
+        e.preventDefault();
+      }
+    }
+    function moveDrag(e) {
+      if (!dragging) return;
+      const p = posFromEvent(e);
+      const dx = p.x - sling.x, dy = p.y - sling.y;
+      const len = Math.min(90, Math.hypot(dx, dy)) || 1;
+      aim = { x: sling.x + dx / Math.hypot(dx, dy) * len || sling.x, y: sling.y + dy / Math.hypot(dx, dy) * len || sling.y };
+      e.preventDefault();
+    }
+    function endDrag(e) {
+      if (e && e.target && e.target.closest && e.target.closest('.actions')) return;
+      if (!dragging) return;
+      dragging = false;
+      const dx = sling.x - aim.x, dy = sling.y - aim.y;
+      playSound('launch');
+      projectile = { x: sling.x, y: sling.y, vx: dx * 4.2, vy: dy * 4.2, r: 12 };
+      ammo -= 1;
+      hud();
+      if (e) e.preventDefault();
+    }
+
+    canvas.addEventListener('mousedown', startDrag);
+    canvas.addEventListener('mousemove', moveDrag);
+    window.addEventListener('mouseup', endDrag);
+    canvas.addEventListener('touchstart', startDrag, { passive: false });
+    canvas.addEventListener('touchmove', moveDrag, { passive: false });
+    canvas.addEventListener('touchend', endDrag, { passive: false });
+    restartBtn.addEventListener('click', (e) => { e.preventDefault(); resetGame(); });
+    restartBtn.addEventListener('touchend', (e) => { e.preventDefault(); resetGame(); }, { passive: false });
+
+    function pop(x, y, color) {
+      for (let i = 0; i < 12; i++) particles.push({ x, y, vx: (Math.random()-0.5)*180, vy: (Math.random()-0.5)*180, life: 0.8, color });
+    }
+
+    function update(dt) {
+      while (balloons.length < 5) spawnBalloon();
+      balloons.forEach(b => {
+        b.y -= b.vy * dt;
+        b.x += Math.sin((performance.now()/1000) + b.y * 0.01) * b.drift * dt;
+        if (b.y < -80) {
+          b.y = 1030 + Math.random() * 120;
+          b.x = 80 + Math.random() * 380;
+        }
+      });
+      particles.forEach(p => { p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt; });
+      for (let i = particles.length - 1; i >= 0; i--) if (particles[i].life <= 0) particles.splice(i, 1);
+
+      if (projectile) {
+        projectile.x += projectile.vx * dt;
+        projectile.y += projectile.vy * dt;
+        projectile.vy += 520 * dt;
+        if (projectile.x < -30 || projectile.x > canvas.width + 30 || projectile.y > canvas.height + 30) projectile = null;
+        for (let i = balloons.length - 1; i >= 0; i--) {
+          const b = balloons[i];
+          if (Math.hypot(projectile.x - b.x, projectile.y - b.y) < projectile.r + b.r) {
+            score += 20;
+            playSound('pop');
+            if (score > best) { best = score; localStorage.setItem(BEST_KEY, String(best)); }
+            pop(b.x, b.y, b.color);
+            balloons.splice(i, 1);
+            projectile = null;
+            hud();
+            break;
+          }
+        }
+      }
+      if (!projectile && ammo <= 0 && !gameOver) { gameOver = true; stopMusic(); endJingle(score >= 60 ? 'win' : 'lose'); }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#ffffffaa';
+      for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.arc(90 + i * 100, 120 + (i%2)*26, 26, 0, Math.PI * 2); ctx.fill(); }
+      ctx.fillStyle = 'rgba(255,255,255,0.18)';
+      ctx.beginPath(); ctx.arc(430, 110, 54, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#166534'; ctx.fillRect(0, 830, canvas.width, 130); ctx.fillStyle='rgba(255,255,255,.08)'; ctx.fillRect(0,760,canvas.width,40);
+
+      balloons.forEach(b => {
+        ctx.fillStyle = b.color;
+        ctx.beginPath(); ctx.ellipse(b.x, b.y, b.r * 0.85, b.r, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#ffffff99'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(b.x, b.y + b.r); ctx.lineTo(b.x, b.y + b.r + 40); ctx.stroke();
+      });
+
+      particles.forEach(p => { ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, 6, 6); ctx.globalAlpha = 1; });
+
+      ctx.strokeStyle = '#8b5e3c'; ctx.lineWidth = 10;
+      ctx.beginPath(); ctx.moveTo(sling.x - 22, sling.y + 40); ctx.lineTo(sling.x - 8, sling.y - 30); ctx.moveTo(sling.x + 22, sling.y + 40); ctx.lineTo(sling.x + 8, sling.y - 30); ctx.stroke();
+      const pouch = dragging ? aim : sling;
+      ctx.strokeStyle = '#fca5a5'; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.moveTo(sling.x - 8, sling.y - 30); ctx.lineTo(pouch.x, pouch.y); ctx.lineTo(sling.x + 8, sling.y - 30); ctx.stroke();
+      ctx.fillStyle = '#78350f'; ctx.beginPath(); ctx.arc(pouch.x, pouch.y, 10, 0, Math.PI * 2); ctx.fill();
+
+      if (projectile) { ctx.fillStyle = '#475569'; ctx.beginPath(); ctx.arc(projectile.x, projectile.y, projectile.r, 0, Math.PI * 2); ctx.fill(); }
+
+      if (gameOver) {
+        ctx.fillStyle = 'rgba(0,0,0,.42)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = 'bold 42px Arial'; ctx.fillText('石子用完了', canvas.width/2, canvas.height/2 - 20);
+        ctx.font = '26px Arial'; ctx.fillText(`本局得分：${score}`, canvas.width/2, canvas.height/2 + 24); ctx.fillText('点“重新开始”再来一局', canvas.width/2, canvas.height/2 + 64); ctx.textAlign = 'left';
+      }
+    }
+
+    function loop(now) {
+      const dt = Math.min(0.033, (now - last) / 1000);
+      last = now;
+      if (!gameOver) update(dt);
+      draw();
+      requestAnimationFrame(loop);
+    }
+    hud();
+    requestAnimationFrame(loop);
+  const difficultyBtn = document.getElementById('difficultyBtn'); let difficulty = localStorage.getItem('ethan-balloon-difficulty') || 'normal'; const diffLabelMap={easy:'简单',normal:'普通',hard:'困难'}; if(difficultyBtn){ difficultyBtn.textContent='难度：'+diffLabelMap[difficulty]; difficultyBtn.addEventListener('click',()=>{ difficulty = difficulty==='easy'?'normal':difficulty==='normal'?'hard':'easy'; localStorage.setItem('ethan-balloon-difficulty', difficulty); difficultyBtn.textContent='难度：'+diffLabelMap[difficulty]; location.reload(); }); }
+</script>
+</body>
+</html>
