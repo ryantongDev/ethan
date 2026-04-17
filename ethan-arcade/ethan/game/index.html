@@ -443,7 +443,7 @@
           hp--;
           playSound('hit');
           updateHud();
-          if (hp <= 0) { gameOver = true; stopMusic(); endJingle(score >= 100 ? 'win' : 'lose'); }
+          if (hp <= 0) { gameOver = true; stopMusic(); const best = Number(localStorage.getItem('ethan-game-best') || 0); if (score > best) localStorage.setItem('ethan-game-best', score); endJingle(score >= 100 ? 'win' : 'lose'); }
           continue;
         }
 
@@ -476,6 +476,8 @@
                 playSound('powerup');
               }
               score += Math.round(e.maxHp * 12 * cfg().scoreMul);
+              const best = Number(localStorage.getItem('ethan-game-best') || 0);
+              if (score > best) localStorage.setItem('ethan-game-best', score);
               playSound('boom');
               updateHud();
             } else {
