@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>成就树与徽章大厅</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root { --bg1:#312e81; --bg2:#0f172a; --bg3:#020617; --panel:rgba(255,255,255,.08); --border:rgba(255,255,255,.12); --text:#cbd5e1; }
+    body { margin:0; min-height:100vh; font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif; background: radial-gradient(circle at top, var(--bg1), var(--bg2) 60%, var(--bg3) 100%); color:white; padding:24px; }
+    .wrap { width:min(1100px,100%); margin:0 auto; }
+    .hero,.panel { background:var(--panel); border:1px solid var(--border); border-radius:24px; padding:22px; margin-bottom:18px; backdrop-filter:blur(12px); }
+    h1,h2{margin-top:0}.sub{color:var(--text);line-height:1.7}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:16px}.card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:16px}.name{font-size:18px;font-weight:900;margin-bottom:8px}.score{color:#fde68a;font-size:24px;font-weight:900;margin-bottom:8px}.desc{color:var(--text);font-size:14px;line-height:1.6}.badges,.skins{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}.badge,.skin{background:rgba(59,130,246,.18);color:#dbeafe;padding:8px 12px;border-radius:999px;font-size:13px}.tree{display:grid;gap:12px;margin-top:14px}.node{padding:14px 16px;border-radius:18px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)}.node strong{display:block;margin-bottom:6px}.locked{opacity:.45}.progress{margin-top:8px;font-size:13px;color:#bfdbfe}.back{display:inline-block;margin-top:10px;color:#93c5fd;text-decoration:none;font-weight:700}.btn{margin-top:10px;padding:14px 14px;border:none;border-radius:12px;color:#fff;font-weight:800;cursor:pointer;touch-action:manipulation}.btn-blue{background:#2563eb}.btn-green{background:#16a34a}.btn-purple{background:#7c3aed}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <h1>🏆 成就树与徽章大厅</h1>
+      <div class="sub">这里会读取你浏览器本地记录的成绩，生成属于你自己的 Ethan Arcade 战绩、成就称号和主题皮肤解锁状态。</div>
+      <a class="back" href="/ethan/">← 返回 Ethan 首页</a><div class="sub" style="margin-top:8px;font-size:12px;">页面版本：20260411b</div>
+    </div>
+    <div class="panel"><h2>总积分与总称号</h2><div class="grid" id="summary"></div></div>
+    <div class="panel"><h2>本地排行榜</h2><div class="grid" id="board"></div></div>
+    <div class="panel"><h2>成就树（进阶版）</h2><div class="tree" id="tree"></div></div>
+    <div class="panel"><h2>已解锁徽章</h2><div class="badges" id="badges"></div></div>
+    <div class="panel"><h2>金币与皮肤商店</h2><div class="grid" id="shopSummary"></div><div class="grid" id="shop"></div></div>
+    <div class="panel"><h2>皮肤系统（已生效主题）</h2><div class="skins" id="skins"></div><div class="sub" style="margin-top:12px;">首页会根据你当前已装备的皮肤主题切换视觉风格。</div></div>
+  </div>
+
+  <script>
+    const board = document.getElementById('board');
+    const summary = document.getElementById('summary');
+    const badges = document.getElementById('badges');
+    const skins = document.getElementById('skins');
+    const shop = document.getElementById('shop');
+    const shopSummary = document.getElementById('shopSummary');
+    const tree = document.getElementById('tree');
+    const scores = {
+      target: Number(localStorage.getItem('ethan-target-best') || 0),
+      balloon: Number(localStorage.getItem('ethan-balloon-best') || 0),
+      dodge: Number(localStorage.getItem('ethan-dodge-best') || 0),
+      relax: Number(localStorage.getItem('ethan-relax-best') || 0),
+      counter: Number(localStorage.getItem('simple-counter-value') || 0),
+      fruit: Number(localStorage.getItem('ethan-fruit-best') || 0),
+      mole: Number(localStorage.getItem('ethan-mole-best') || 0),
+      csRange: Number(localStorage.getItem('ethan-cs-range-best') || 0),
+      csHead: Number(localStorage.getItem('ethan-cs-range-headshots-best') || 0),
+      csDuel: Number(localStorage.getItem('ethan-cs-duel-best') || 0),
+    };
+    const activeSkin = localStorage.getItem('ethan_arcade_active_skin') || 'default';
+    const owned = JSON.parse(localStorage.getItem('ethan_arcade_owned_skins') || '[]');
+    const currentSkinLabel = { default:'默认主题', hunter:'蓝色猎手主题', candy:'糖果气球主题', space:'深空逃生主题', bubble:'清凉泡泡主题' }[activeSkin] || '默认主题';
+    const totalScore = Math.floor(scores.target + scores.balloon + scores.relax + scores.counter / 10 + scores.dodge * 5 + scores.fruit * 2 + scores.mole * 8 + scores.csRange * 2 + scores.csHead * 5 + scores.csDuel * 25);
+    let coins = Number(localStorage.getItem('ethan_arcade_coins') || 0);
+    let exchanged = Number(localStorage.getItem('ethan_arcade_exchanged') || 0);
+    let title = '新手冒险者';
+    if (totalScore >= 1200) title = '传说街机王'; else if (totalScore >= 700) title = '高级挑战者'; else if (totalScore >= 300) title = '熟练玩家';
+
+    summary.innerHTML = `<div class="card"><div class="name">总积分</div><div class="score">${totalScore}</div><div class="desc">综合各小游戏成绩折算而来</div></div><div class="card"><div class="name">当前总称号</div><div class="score">${title}</div><div class="desc">继续提升战绩可以升级称号</div></div>`;
+    const canExchange = Math.max(0, Math.floor((totalScore - exchanged) / 100) * 10);
+    shopSummary.innerHTML = `<div class="card"><div class="name">金币</div><div class="score">${coins}</div><div class="desc">可用于购买皮肤</div></div><div class="card"><div class="name">可兑换</div><div class="score">${canExchange}</div><div class="desc">每 100 总分可兑换 10 金币</div><button class="btn btn-blue" id="exchangeBtn" type="button">兑换金币</button></div><div class="card"><div class="name">当前装备</div><div class="score">${currentSkinLabel}</div><div class="desc">你现在正在使用的皮肤主题</div></div>`;
+
+    [
+      ['计数器', scores.counter, '当前计数值'],
+      ['射靶', scores.target, '最高命中得分'],
+      ['弹弓打气球', scores.balloon, '最高打爆分数'],
+      ['躲避', scores.dodge.toFixed(1) + ' 秒', '最佳存活时间'],
+      ['解压', scores.relax, '累计捏爆泡泡数'],
+      ['切水果', scores.fruit, '最高切水果得分'],
+      ['打地鼠', scores.mole, '最高打地鼠得分'],
+      ['CS 打靶', scores.csRange, '最高训练分数'],
+      ['CS 对枪', scores.csDuel, '最高通关回合'],
+    ].forEach(([n,s,d]) => { const el=document.createElement('div'); el.className='card'; el.innerHTML=`<div class="name">${n}</div><div class="score">${s}</div><div class="desc">${d}</div>`; board.appendChild(el); });
+
+    [
+      ['射靶成长线', scores.target, [50,150,300], ['新手射手','神射手','传说神射手']],
+      ['气球成长线', scores.balloon, [60,140,260], ['气球杀手','气球统治者','气球终结者']],
+      ['生存成长线', scores.dodge, [15,35,60], ['生存者','生存大师','极限幸存者']],
+      ['解压成长线', scores.relax, [30,80,160], ['解压学徒','解压之王','泡泡毁灭者']],
+      ['数值成长线', scores.counter, [100,300,1000], ['数字狂人','数值掌控者','数字支配者']],
+      ['水果成长线', scores.fruit, [20,50,100], ['水果学徒','水果忍者','果切大师']],
+      ['地鼠成长线', scores.mole, [15,35,60], ['地鼠猎人','地鼠克星','嘉年华王者']],
+      ['CS 成长线', scores.csRange, [80,180,320], ['新兵射手','战术射手','爆头机器']],
+      ['对枪成长线', scores.csDuel, [2,4,7], ['对枪新兵','对枪高手','残局之王']],
+    ].forEach(([name, now, steps, labels]) => {
+      const unlocked = steps.filter(s => now >= s).length;
+      const nextStep = steps[unlocked] || steps[steps.length - 1];
+      const el = document.createElement('div');
+      el.className = 'node' + (unlocked ? '' : ' locked');
+      el.innerHTML = `<strong>${unlocked ? '✅' : '🔒'} ${name}</strong><div>${labels.map((n,i)=> `${now >= steps[i] ? '✔' : '○'} ${n}`).join('　')}</div><div class="progress">当前：${now} ｜ 下一档：${nextStep}</div>`;
+      tree.appendChild(el);
+    });
+
+    const unlockedBadges = [];
+    if (scores.target >= 150) unlockedBadges.push('🎯 传奇射手');
+    if (scores.balloon >= 140) unlockedBadges.push('🎈 爆破达人');
+    if (scores.dodge >= 35) unlockedBadges.push('🌀 极限幸存者');
+    if (scores.relax >= 80) unlockedBadges.push('🫧 泡泡毁灭者');
+    if (scores.counter >= 300) unlockedBadges.push('🔢 数值掌控者');
+    if (scores.fruit >= 50) unlockedBadges.push('🍉 果切高手');
+    if (scores.mole >= 35) unlockedBadges.push('🔨 地鼠猎手');
+    if (scores.csRange >= 180 || scores.csHead >= 8) unlockedBadges.push('🔫 战术射手');
+    if (scores.csDuel >= 4) unlockedBadges.push('💥 对枪高手');
+    if (!unlockedBadges.length) unlockedBadges.push('🌱 初来乍到');
+    unlockedBadges.forEach(text => { const el = document.createElement('div'); el.className = 'badge'; el.textContent = text; badges.appendChild(el); });
+
+    const unlockedSkins = [];
+    if (scores.target >= 150) unlockedSkins.push('蓝色猎手主题');
+    if (scores.balloon >= 140) unlockedSkins.push('糖果气球主题');
+    if (scores.dodge >= 35) unlockedSkins.push('深空逃生主题');
+    if (scores.relax >= 80) unlockedSkins.push('清凉泡泡主题');
+    if (scores.fruit >= 50) unlockedSkins.push('水果狂欢主题');
+    if (scores.mole >= 35) unlockedSkins.push('嘉年华地鼠主题');
+    if (scores.csRange >= 180) unlockedSkins.push('战术靶场主题');
+    if (scores.csDuel >= 4) unlockedSkins.push('对枪战场主题');
+    if (!unlockedSkins.length) unlockedSkins.push('默认主题');
+    unlockedSkins.forEach(text => { const el = document.createElement('div'); el.className = 'skin'; el.textContent = text; skins.appendChild(el); });
+
+    const skinCatalog = [
+      { id:'default', name:'默认主题', price:0 },
+      { id:'hunter', name:'蓝色猎手主题', price:20 },
+      { id:'candy', name:'糖果气球主题', price:30 },
+      { id:'space', name:'深空逃生主题', price:40 },
+      { id:'bubble', name:'清凉泡泡主题', price:25 },
+      { id:'fruit', name:'水果狂欢主题', price:35 },
+      { id:'mole', name:'嘉年华地鼠主题', price:35 },
+      { id:'tactical', name:'战术靶场主题', price:45 },
+      { id:'duel', name:'对枪战场主题', price:45 },
+    ];
+    skinCatalog.forEach(item => {
+      const ownedFlag = item.id === 'default' ? true : owned.includes(item.id);
+      const using = activeSkin === item.id;
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.innerHTML = `<div class="name">${item.name}</div><div class="score">${item.price} 金币</div><div class="desc">${ownedFlag ? (using ? '当前使用中' : '已拥有') : '未拥有'}</div><button type="button" class="btn ${ownedFlag ? 'btn-green' : 'btn-purple'}" data-skin="${item.id}" data-price="${item.price}">${ownedFlag ? '使用' : '购买'}</button>`;
+      shop.appendChild(el);
+    });
+
+    document.addEventListener('click', (e) => {
+      const exchangeBtn = e.target.closest('#exchangeBtn');
+      if (exchangeBtn) {
+        const can = Math.max(0, Math.floor((totalScore - Number(localStorage.getItem('ethan_arcade_exchanged') || 0)) / 100) * 10);
+        if (can <= 0) return alert('暂时没有可兑换金币');
+        localStorage.setItem('ethan_arcade_coins', String(Number(localStorage.getItem('ethan_arcade_coins') || 0) + can));
+        localStorage.setItem('ethan_arcade_exchanged', String(Number(localStorage.getItem('ethan_arcade_exchanged') || 0) + Math.floor(can / 10) * 100));
+        alert(`已兑换 ${can} 金币`);
+        location.reload();
+        return;
+      }
+      const skinBtn = e.target.closest('[data-skin]');
+      if (skinBtn) {
+        const id = skinBtn.dataset.skin;
+        const price = Number(skinBtn.dataset.price || 0);
+        let coinVal = Number(localStorage.getItem('ethan_arcade_coins') || 0);
+        let own = JSON.parse(localStorage.getItem('ethan_arcade_owned_skins') || '[]');
+        if (id !== 'default' && !own.includes(id)) {
+          if (coinVal < price) return alert('金币不够');
+          coinVal -= price;
+          own.push(id);
+          localStorage.setItem('ethan_arcade_coins', String(coinVal));
+          localStorage.setItem('ethan_arcade_owned_skins', JSON.stringify(own));
+        }
+        localStorage.setItem('ethan_arcade_active_skin', id);
+        alert(`已装备 ${id === 'default' ? '默认主题' : skinBtn.parentElement.querySelector('.name').textContent}`);
+        location.reload();
+      }
+    });
+
+    let theme = activeSkin || 'default';
+    const root = document.documentElement;
+    const themes = {
+      default: { bg1:'#312e81', bg2:'#0f172a', bg3:'#020617', panel:'rgba(255,255,255,.08)', border:'rgba(255,255,255,.12)', text:'#cbd5e1' },
+      hunter: { bg1:'#1d4ed8', bg2:'#0f172a', bg3:'#172554', panel:'rgba(59,130,246,.16)', border:'rgba(147,197,253,.22)', text:'#dbeafe' },
+      candy: { bg1:'#db2777', bg2:'#7c3aed', bg3:'#312e81', panel:'rgba(244,114,182,.16)', border:'rgba(251,207,232,.22)', text:'#fce7f3' },
+      space: { bg1:'#0f172a', bg2:'#111827', bg3:'#312e81', panel:'rgba(99,102,241,.16)', border:'rgba(165,180,252,.22)', text:'#e0e7ff' },
+      bubble: { bg1:'#0891b2', bg2:'#164e63', bg3:'#082f49', panel:'rgba(34,211,238,.14)', border:'rgba(165,243,252,.22)', text:'#cffafe' },
+      fruit: { bg1:'#f97316', bg2:'#b91c1c', bg3:'#7c2d12', panel:'rgba(251,146,60,.14)', border:'rgba(254,215,170,.22)', text:'#ffedd5' },
+      mole: { bg1:'#ca8a04', bg2:'#854d0e', bg3:'#422006', panel:'rgba(250,204,21,.14)', border:'rgba(254,240,138,.22)', text:'#fef3c7' },
+      tactical: { bg1:'#334155', bg2:'#1e293b', bg3:'#0f172a', panel:'rgba(148,163,184,.14)', border:'rgba(226,232,240,.22)', text:'#e2e8f0' },
+      duel: { bg1:'#7f1d1d', bg2:'#1f2937', bg3:'#111827', panel:'rgba(239,68,68,.14)', border:'rgba(252,165,165,.22)', text:'#fee2e2' },
+    };
+    const cfg = themes[theme] || themes.default;
+    root.style.setProperty('--bg1', cfg.bg1); root.style.setProperty('--bg2', cfg.bg2); root.style.setProperty('--bg3', cfg.bg3); root.style.setProperty('--panel', cfg.panel); root.style.setProperty('--border', cfg.border); root.style.setProperty('--text', cfg.text);
+  </script>
+  <script src="/ethan/achievement-helper.js"></script>
+  <script>window.EthanAchievements && window.EthanAchievements.run();</script>
+</body>
+</html>

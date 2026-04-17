@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>深空逃生</title>
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #0f172a, #111827 45%, #1d4ed8);
+      font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+    .wrap { width: min(100%, 560px); }
+    .top { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+    .badge { background: linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,.09)); border: 1px solid rgba(255,255,255,.18); border-radius: 999px; padding: 8px 12px; font-weight: 700; color: #dbeafe; }
+    .title { text-align: center; font-size: 26px; font-weight: 900; margin: 4px 0 6px; }
+    .sub { text-align: center; color: #bfdbfe; font-size: 13px; margin-bottom: 12px; }
+    canvas { width: 100%; aspect-ratio: 9/16; display: block; border-radius: 22px; background: linear-gradient(180deg, #020617 0%, #111827 45%, #1d4ed8 100%); border: 2px solid rgba(255,255,255,.28); box-shadow: 0 18px 44px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.10); box-shadow: 0 16px 40px rgba(0,0,0,.28); }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    button, .back { border: none; border-radius: 16px; padding: 14px; font-size: 16px; font-weight: 800; color: #fff; background: linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,.09)); cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="badge" id="difficultyBtn">难度：普通</div><div class="badge" id="time">存活：0s</div>
+      <div class="badge" id="best">最佳：0s</div>
+      <div class="badge" id="speed">强度：1</div>
+    </div>
+    <div class="title">深空逃生</div>
+    <div class="sub">拖动飞船核心躲开坠落陨石，活得越久，压迫感越强</div>
+    <canvas id="game" width="540" height="960"></canvas>
+    <div class="actions">
+      <button id="musicBtn">音乐：关</button>
+      <a class="back" href="/ethan/">返回首页</a>
+      <button id="restart">重新开始</button>
+    </div>
+  </div>
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const timeEl = document.getElementById('time');
+    const bestEl = document.getElementById('best');
+    const speedEl = document.getElementById('speed');
+    const restartBtn = document.getElementById('restart');
+    const BEST_KEY = 'ethan-dodge-best';
+
+    let best = Number(localStorage.getItem(BEST_KEY) || 0);
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function endJingle(kind) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const seq = kind === 'win' ? [523.25, 659.25, 783.99] : [392, 311.13, 220];
+      const types = kind === 'win' ? ['triangle','triangle','sine'] : ['sawtooth','triangle','sine'];
+      seq.forEach((f, i) => {
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.type = types[i];
+        o.frequency.setValueAtTime(f, audioCtx.currentTime + i * 0.16);
+        g.gain.setValueAtTime(0.001, audioCtx.currentTime + i * 0.16);
+        g.gain.exponentialRampToValueAtTime(0.08, audioCtx.currentTime + i * 0.16 + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.16 + 0.18);
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(audioCtx.currentTime + i * 0.16);
+        o.stop(audioCtx.currentTime + i * 0.16 + 0.2);
+      });
+    }
+    const musicBtn = document.getElementById('musicBtn');
+    let musicOn = false;
+    let musicTimer = null;
+    function stopMusic() {
+      musicOn = false;
+      if (musicBtn) musicBtn.textContent = '音乐：关';
+      if (musicTimer) { clearTimeout(musicTimer); musicTimer = null; }
+    }
+    function bgNote(freq = 440, dur = 0.18, type = 'sine', gainValue = 0.014) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      g.gain.setValueAtTime(0.001, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(gainValue, audioCtx.currentTime + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime + dur + 0.02);
+    }
+    function musicLoop() {
+      if (!musicOn) return;
+      const lead = [293.66, 311.13, 349.23, 392, 349.23, 311.13, 293.66, 261.63];
+      const bass = [146.83, 155.56, 174.61, 196, 174.61, 155.56, 146.83, 130.81];
+      lead.forEach((f, i) => setTimeout(() => bgNote(f, 0.26, 'sawtooth', 0.012), i * 240));
+      bass.forEach((f, i) => setTimeout(() => bgNote(f, 0.34, 'sine', 0.008), i * 240 + 60));
+      musicTimer = setTimeout(musicLoop, 2200);
+    }
+    function toggleMusic() {
+      musicOn = !musicOn;
+      musicBtn.textContent = `音乐：${musicOn ? '开' : '关'}`;
+      if (musicOn) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        musicLoop();
+      } else if (musicTimer) {
+        clearTimeout(musicTimer);
+        musicTimer = null;
+      }
+    }
+    musicBtn.addEventListener('click', toggleMusic);
+
+    function hitSound() { if (audioCtx.state === 'suspended') audioCtx.resume(); const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.type='sawtooth'; o.frequency.setValueAtTime(160, audioCtx.currentTime); o.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime+0.2); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.08, audioCtx.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+0.21); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+0.22); }
+    let player, rocks, particles, dragging, aliveTime, over, last;
+
+    function resetGame() {
+      player = { x: 270, y: 820, size: 34, hitFlash: 0 };
+      rocks = [];
+      particles = [];
+      dragging = false;
+      aliveTime = 0;
+      over = false;
+      last = performance.now();
+      for (let i = 0; i < 5; i++) spawnRock();
+      hud();
+    }
+
+    function hud() {
+      timeEl.textContent = `存活：${aliveTime.toFixed(1)}s`;
+      bestEl.textContent = `最佳：${best.toFixed(1)}s`;
+      speedEl.textContent = `强度：${Math.min(99, 1 + Math.floor(aliveTime / 5))}`;
+    }
+
+    function spawnRock() {
+      const size = 24 + Math.random() * 26;
+      rocks.push({
+        x: 40 + Math.random() * 460,
+        y: -size - Math.random() * 600,
+        size,
+        vy: 220 + Math.random() * 160 + aliveTime * 6,
+        vx: (Math.random() - 0.5) * 70,
+        spin: (Math.random() - 0.5) * 4,
+        angle: 0,
+      });
+    }
+
+    function pointerPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const p = e.touches ? e.touches[0] : e;
+      return { x: (p.clientX - rect.left) * (canvas.width / rect.width), y: (p.clientY - rect.top) * (canvas.height / rect.height) };
+    }
+
+    function beginDrag(e) {
+      const p = pointerPos(e);
+      if (Math.abs(p.x - player.x) < 70 && Math.abs(p.y - player.y) < 70 && !over) {
+        dragging = true;
+        e.preventDefault();
+      }
+    }
+    function moveDrag(e) {
+      if (!dragging || over) return;
+      const p = pointerPos(e);
+      player.x = Math.max(player.size / 2, Math.min(canvas.width - player.size / 2, p.x));
+      player.y = Math.max(120, Math.min(canvas.height - player.size / 2 - 18, p.y));
+      e.preventDefault();
+    }
+    function endDrag() { dragging = false; }
+
+    canvas.addEventListener('mousedown', beginDrag);
+    canvas.addEventListener('mousemove', moveDrag);
+    window.addEventListener('mouseup', endDrag);
+    canvas.addEventListener('touchstart', beginDrag, { passive: false });
+    canvas.addEventListener('touchmove', moveDrag, { passive: false });
+    canvas.addEventListener('touchend', endDrag, { passive: false });
+    restartBtn.addEventListener('click', (e) => { e.preventDefault(); resetGame(); });
+
+    function explode() {
+      for (let i = 0; i < 18; i++) particles.push({ x: player.x, y: player.y, vx: (Math.random()-0.5)*260, vy: (Math.random()-0.5)*260, life: 0.9 });
+    }
+
+    function update(dt) {
+      aliveTime += dt;
+      player.hitFlash = Math.max(0, player.hitFlash - dt);
+      while (rocks.length < 5 + Math.min(8, Math.floor(aliveTime / 6))) spawnRock();
+      rocks.forEach(r => {
+        r.y += r.vy * dt;
+        r.x += r.vx * dt;
+        r.angle += r.spin * dt;
+        if (r.y - r.size > canvas.height + 50) {
+          r.y = -r.size - Math.random() * 200;
+          r.x = 40 + Math.random() * 460;
+          r.vy = 220 + Math.random() * 160 + aliveTime * 6;
+        }
+        if (r.x < r.size || r.x > canvas.width - r.size) r.vx *= -1;
+        if (Math.abs(r.x - player.x) < (r.size + player.size) * 0.6 && Math.abs(r.y - player.y) < (r.size + player.size) * 0.6) {
+          over = true;
+          stopMusic();
+          endJingle(aliveTime >= 20 ? 'win' : 'lose');
+          hitSound();
+          explode();
+          if (aliveTime > best) { best = aliveTime; localStorage.setItem(BEST_KEY, String(best)); }
+        }
+      });
+      particles.forEach(p => { p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt; });
+      for (let i = particles.length - 1; i >= 0; i--) if (particles[i].life <= 0) particles.splice(i, 1);
+      hud();
+    }
+
+    function drawRock(r) {
+      ctx.save();
+      ctx.translate(r.x, r.y);
+      ctx.rotate(r.angle);
+      const grad = ctx.createRadialGradient(0, -r.size*0.2, 4, 0, 0, r.size*1.1); grad.addColorStop(0, '#fca5a5'); grad.addColorStop(0.45, '#ef4444'); grad.addColorStop(1, '#7f1d1d'); ctx.fillStyle = grad;
+      ctx.beginPath();
+      for (let i = 0; i < 7; i++) {
+        const a = (Math.PI * 2 / 7) * i;
+        const rr = r.size * (0.8 + (i % 2) * 0.25);
+        const x = Math.cos(a) * rr;
+        const y = Math.sin(a) * rr;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'rgba(255,255,255,.9)';
+      for (let i = 0; i < 45; i++) {
+        ctx.globalAlpha = 0.15 + (i % 3) * 0.18;
+        ctx.fillRect((i * 113) % canvas.width, (i * 97 + performance.now() * 0.08 * (i % 4 + 1)) % canvas.height, 2, 8);
+      }
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = 'rgba(96,165,250,0.08)';
+      ctx.beginPath(); ctx.arc(420, 160, 110, 0, Math.PI * 2); ctx.fill();
+      rocks.forEach(drawRock);
+      particles.forEach(p => { ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = '#93c5fd'; ctx.fillRect(p.x, p.y, 6, 6); ctx.globalAlpha = 1; });
+      ctx.save();
+      ctx.translate(player.x, player.y);
+      const flame = 0.7 + Math.sin(performance.now() * 0.03) * 0.18;
+      ctx.fillStyle = player.hitFlash > 0 ? '#fef08a' : 'rgba(96,165,250,0.45)';
+      ctx.beginPath();
+      ctx.moveTo(-player.size * 0.18, player.size * 0.45);
+      ctx.lineTo(0, player.size * (0.95 + flame * 0.2));
+      ctx.lineTo(player.size * 0.18, player.size * 0.45);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = player.hitFlash > 0 ? '#ffffff' : '#60a5fa';
+      ctx.beginPath();
+      ctx.moveTo(0, -player.size * 0.72);
+      ctx.lineTo(player.size * 0.52, player.size * 0.55);
+      ctx.lineTo(0, player.size * 0.22);
+      ctx.lineTo(-player.size * 0.52, player.size * 0.55);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#dbeafe';
+      ctx.beginPath();
+      ctx.arc(0, -player.size * 0.1, player.size * 0.16, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(-player.size * 0.12, player.size * 0.16, player.size * 0.24, player.size * 0.22);
+      ctx.restore();
+
+      if (over) {
+        ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = 'bold 44px Arial'; ctx.fillText('撞上了', canvas.width/2, canvas.height/2 - 20);
+        ctx.font = '26px Arial'; ctx.fillText(`坚持了 ${aliveTime.toFixed(1)} 秒`, canvas.width/2, canvas.height/2 + 24); ctx.fillText('点“重新开始”再来', canvas.width/2, canvas.height/2 + 64); ctx.textAlign = 'left';
+      }
+    }
+
+    function loop(now) {
+      const dt = Math.min(0.033, (now - last) / 1000);
+      last = now;
+      if (!over) update(dt);
+      draw();
+      requestAnimationFrame(loop);
+    }
+    resetGame();
+    requestAnimationFrame(loop);
+  const difficultyBtn = document.getElementById('difficultyBtn'); let difficulty = localStorage.getItem('ethan-dodge-difficulty') || 'normal'; const diffLabelMap={easy:'简单',normal:'普通',hard:'困难'}; if(difficultyBtn){ difficultyBtn.textContent='难度：'+diffLabelMap[difficulty]; difficultyBtn.addEventListener('click',()=>{ difficulty = difficulty==='easy'?'normal':difficulty==='normal'?'hard':'easy'; localStorage.setItem('ethan-dodge-difficulty', difficulty); difficultyBtn.textContent='难度：'+diffLabelMap[difficulty]; location.reload(); }); }
+</script>
+</body>
+</html>

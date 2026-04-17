@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>泡泡解压场</title>
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #0f172a, #164e63 55%, #67e8f9);
+      font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+    .wrap { width: min(100%, 560px); }
+    .top { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+    .badge { background: linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,.09)); border: 1px solid rgba(255,255,255,.18); border-radius: 999px; padding: 8px 12px; font-weight: 700; color: #cffafe; }
+    .title { text-align: center; font-size: 26px; font-weight: 900; margin: 4px 0 6px; }
+    .sub { text-align: center; color: #ccfbf1; font-size: 13px; margin-bottom: 12px; }
+    canvas { width: 100%; aspect-ratio: 9/16; display: block; border-radius: 22px; background: radial-gradient(circle at top, #e0f2fe, #a5f3fc 45%, #67e8f9 100%); border: 2px solid rgba(255,255,255,.28); box-shadow: 0 18px 44px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.10); box-shadow: 0 16px 40px rgba(0,0,0,.28); }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    button, .back { border: none; border-radius: 16px; padding: 14px; font-size: 16px; font-weight: 800; color: #fff; background: linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,.09)); cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top"><div class="badge" id="difficultyBtn">难度：普通</div>
+      <div class="badge" id="count">捏爆：0</div>
+      <div class="badge" id="best">最高：0</div>
+      <div class="badge">玩法：点泡泡</div>
+    </div>
+    <div class="title">泡泡解压场</div>
+    <div class="sub">轻松解压风格，点爆泡泡，画面更柔和</div>
+    <canvas id="game" width="540" height="960"></canvas>
+    <div class="actions">
+      <button id="musicBtn">音乐：关</button>
+      <a class="back" href="/ethan/">返回首页</a>
+      <button id="restart">清空重来</button>
+    </div>
+  </div>
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const countEl = document.getElementById('count');
+    const bestEl = document.getElementById('best');
+    const restartBtn = document.getElementById('restart');
+    const BEST_KEY = 'ethan-relax-best';
+    let popped = 0, best = Number(localStorage.getItem(BEST_KEY) || 0), bubbles = [], particles = [];
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    const musicBtn = document.getElementById('musicBtn');
+    let musicOn = false;
+    let musicTimer = null;
+    function stopMusic() {
+      musicOn = false;
+      if (musicBtn) musicBtn.textContent = '音乐：关';
+      if (musicTimer) { clearTimeout(musicTimer); musicTimer = null; }
+    }
+    function note(freq = 440, dur = 0.18, type = 'sine', gainValue = 0.018) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      g.gain.setValueAtTime(0.001, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(gainValue, audioCtx.currentTime + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime + dur + 0.02);
+    }
+    function musicLoop() {
+      if (!musicOn) return;
+      const seq = [392, 523.25, 587.33, 523.25, 392, 329.63];
+      seq.forEach((f, i) => setTimeout(() => note(f, 0.22, 'sine', 0.014), i * 220));
+      musicTimer = setTimeout(musicLoop, 1600);
+    }
+    function toggleMusic() {
+      musicOn = !musicOn;
+      musicBtn.textContent = `音乐：${musicOn ? '开' : '关'}`;
+      if (musicOn) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        musicLoop();
+      } else if (musicTimer) {
+        clearTimeout(musicTimer);
+        musicTimer = null;
+      }
+    }
+    musicBtn.addEventListener('click', toggleMusic);
+
+    function popSound() {
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(520, audioCtx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(180, audioCtx.currentTime + 0.08);
+      g.gain.setValueAtTime(0.001, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.08, audioCtx.currentTime + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.09);
+      o.connect(g);
+      g.connect(audioCtx.destination);
+      o.start();
+      o.stop(audioCtx.currentTime + 0.1);
+    }
+
+    function makeBubble() {
+      const colors = ['#f9a8d4','#93c5fd','#86efac','#fde68a','#c4b5fd','#67e8f9'];
+      return {
+        x: 50 + Math.random() * 440,
+        y: 80 + Math.random() * 760,
+        r: 24 + Math.random() * 34,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        wobble: Math.random() * Math.PI * 2,
+      };
+    }
+
+    function refill() {
+      while (bubbles.length < 18) bubbles.push(makeBubble());
+    }
+
+    function hud() {
+      countEl.textContent = `捏爆：${popped}`;
+      bestEl.textContent = `最高：${best}`;
+    }
+
+    function reset() {
+      stopMusic();
+      popped = 0; bubbles = []; particles = []; refill(); hud();
+    }
+
+    function burst(x, y, color) {
+      for (let i = 0; i < 14; i++) particles.push({ x, y, vx: (Math.random()-0.5)*220, vy: (Math.random()-0.5)*220, life: 0.7, color });
+    }
+
+    function tap(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      const x = (clientX - rect.left) * (canvas.width / rect.width);
+      const y = (clientY - rect.top) * (canvas.height / rect.height);
+      for (let i = bubbles.length - 1; i >= 0; i--) {
+        const b = bubbles[i];
+        if (Math.hypot(x - b.x, y - b.y) <= b.r) {
+          burst(b.x, b.y, b.color);
+          bubbles.splice(i, 1);
+          popped += 1;
+          if (popped > best) { best = popped; localStorage.setItem(BEST_KEY, String(best)); }
+          if (audioCtx.state === 'suspended') audioCtx.resume();
+          popSound();
+          refill();
+          hud();
+          return;
+        }
+      }
+    }
+
+    canvas.addEventListener('click', e => tap(e.clientX, e.clientY));
+    canvas.addEventListener('touchstart', e => { const t = e.changedTouches[0]; tap(t.clientX, t.clientY); e.preventDefault(); }, { passive: false });
+    restartBtn.addEventListener('click', (e) => { e.preventDefault(); reset(); });
+
+    function loop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle='rgba(255,255,255,.15)'; ctx.beginPath(); ctx.arc(420,120,64,0,Math.PI*2); ctx.fill();
+      bubbles.forEach((b, idx) => {
+        b.wobble += 0.02 + idx * 0.0008;
+        const y = b.y + Math.sin(b.wobble) * 2.2;
+        ctx.fillStyle = b.color;
+        ctx.globalAlpha = 0.78;
+        ctx.beginPath();
+        ctx.arc(b.x, y, b.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 0.28;
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(b.x - b.r * 0.28, y - b.r * 0.28, b.r * 0.35, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      });
+      particles.forEach(p => {
+        p.x += p.vx * 0.016; p.y += p.vy * 0.016; p.life -= 0.016;
+        ctx.globalAlpha = Math.max(0, p.life);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, 6, 6);
+        ctx.globalAlpha = 1;
+      });
+      for (let i = particles.length - 1; i >= 0; i--) if (particles[i].life <= 0) particles.splice(i, 1);
+      requestAnimationFrame(loop);
+    }
+
+    reset();
+    requestAnimationFrame(loop);
+  const difficultyBtn = document.getElementById('difficultyBtn'); let difficulty = localStorage.getItem('ethan-relax-difficulty') || 'normal'; const diffLabelMap={easy:'简单',normal:'普通',hard:'困难'}; if(difficultyBtn){ difficultyBtn.textContent='难度：'+diffLabelMap[difficulty]; difficultyBtn.addEventListener('click',()=>{ difficulty = difficulty==='easy'?'normal':difficulty==='normal'?'hard':'easy'; localStorage.setItem('ethan-relax-difficulty', difficulty); difficultyBtn.textContent='难度：'+diffLabelMap[difficulty]; location.reload(); }); }
+</script>
+</body>
+</html>
