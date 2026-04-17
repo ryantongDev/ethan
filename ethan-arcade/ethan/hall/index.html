@@ -50,11 +50,12 @@
       csRange: Number(localStorage.getItem('ethan-cs-range-best') || 0),
       csHead: Number(localStorage.getItem('ethan-cs-range-headshots-best') || 0),
       csDuel: Number(localStorage.getItem('ethan-cs-duel-best') || 0),
+      game: Number(localStorage.getItem('ethan-game-best') || 0),
     };
     const activeSkin = localStorage.getItem('ethan_arcade_active_skin') || 'default';
     const owned = JSON.parse(localStorage.getItem('ethan_arcade_owned_skins') || '[]');
     const currentSkinLabel = { default:'默认主题', hunter:'蓝色猎手主题', candy:'糖果气球主题', space:'深空逃生主题', bubble:'清凉泡泡主题' }[activeSkin] || '默认主题';
-    const totalScore = Math.floor(scores.target + scores.balloon + scores.relax + scores.counter / 10 + scores.dodge * 5 + scores.fruit * 2 + scores.mole * 8 + scores.csRange * 2 + scores.csHead * 5 + scores.csDuel * 25);
+    const totalScore = Math.floor(scores.target + scores.balloon + scores.relax + scores.counter / 10 + scores.dodge * 5 + scores.fruit * 2 + scores.mole * 8 + scores.csRange * 2 + scores.csHead * 5 + scores.csDuel * 25 + scores.game * 3);
     let coins = Number(localStorage.getItem('ethan_arcade_coins') || 0);
     let exchanged = Number(localStorage.getItem('ethan_arcade_exchanged') || 0);
     let title = '新手冒险者';
@@ -74,6 +75,7 @@
       ['打地鼠', scores.mole, '最高打地鼠得分'],
       ['CS 打靶', scores.csRange, '最高训练分数'],
       ['CS 对枪', scores.csDuel, '最高通关回合'],
+      ['星域射击', scores.game, '最高得分'],
     ].forEach(([n,s,d]) => { const el=document.createElement('div'); el.className='card'; el.innerHTML=`<div class="name">${n}</div><div class="score">${s}</div><div class="desc">${d}</div>`; board.appendChild(el); });
 
     [
@@ -86,6 +88,7 @@
       ['地鼠成长线', scores.mole, [15,35,60], ['地鼠猎人','地鼠克星','嘉年华王者']],
       ['CS 成长线', scores.csRange, [80,180,320], ['新兵射手','战术射手','爆头机器']],
       ['对枪成长线', scores.csDuel, [2,4,7], ['对枪新兵','对枪高手','残局之王']],
+      ['射击成长线', scores.game, [50,150,300], ['射击新兵','火力射手','星域霸主']],
     ].forEach(([name, now, steps, labels]) => {
       const unlocked = steps.filter(s => now >= s).length;
       const nextStep = steps[unlocked] || steps[steps.length - 1];
