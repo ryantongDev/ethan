@@ -6,17 +6,184 @@
   <title>地鼠嘉年华场</title>
   <style>
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    body{margin:0;min-height:100vh;background:linear-gradient(180deg,#1f2937,#14532d 70%,#166534);font-family:Arial,"PingFang SC","Microsoft YaHei",sans-serif;color:#fff;display:flex;justify-content:center;align-items:center;padding:16px}
-    .wrap{width:min(100%,560px)}.top{display:flex;justify-content:space-between;gap:8px;margin-bottom:10px;flex-wrap:wrap}.badge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:8px 12px;font-weight:700;color:#dcfce7}.title{text-align:center;font-size:26px;font-weight:900;margin:4px 0 6px}.sub{text-align:center;color:#bbf7d0;font-size:13px;margin-bottom:12px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.hole{aspect-ratio:1/1;border-radius:50%;background:radial-gradient(circle at 50% 40%, #52525b, #3f3f46 60%, #27272a 100%);position:relative;overflow:hidden;border:4px solid #57534e;box-shadow:inset 0 8px 18px rgba(0,0,0,.25), 0 10px 20px rgba(0,0,0,.18)}.mole{position:absolute;left:50%;bottom:-62%;transform:translateX(-50%) scale(1);width:70%;height:70%;transition:bottom .15s, transform .15s}.hole.up .mole{bottom:8%;animation:bounce .28s ease}.hole.hit .mole{transform:translateX(-50%) scale(.9) rotate(-10deg)}.hammer{position:absolute;right:-2px;top:-4px;font-size:34px;opacity:0;transform:rotate(-40deg) translateY(-12px);pointer-events:none}.hole.hit .hammer{opacity:1;transform:rotate(-10deg) translateY(12px);transition:.12s ease}@keyframes bounce{0%{transform:translateX(-50%) scale(.88)}55%{transform:translateX(-50%) scale(1.06)}100%{transform:translateX(-50%) scale(1)}}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.btn,.back{border:none;border-radius:16px;padding:14px;font-size:16px;font-weight:800;color:#fff;background:rgba(255,255,255,.12);text-decoration:none;display:flex;align-items:center;justify-content:center}#overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;place-items:center;z-index:99}#overlay.show{display:grid}#overlay-content{background:linear-gradient(180deg,#1f2937,#166534);border:2px solid rgba(255,255,255,.25);border-radius:24px;padding:36px 48px;text-align:center;animation:popup .35s ease}@keyframes popup{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}#overlay h2{font-size:40px;margin:0 0 10px}#overlay p{font-size:20px;margin:0 0 24px}#overlay .final-score{font-size:56px;font-weight:900;color:#fde047;margin:0 0 8px}
+    body{margin:0;min-height:100dvh;background:linear-gradient(180deg,#1f2937,#14532d 70%,#166534);font-family:Arial,"PingFang SC","Microsoft YaHei",sans-serif;color:#fff;display:flex;justify-content:center;align-items:center;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom);overflow:hidden}
+    .wrap{width:min(100%,560px);display:flex;flex-direction:column;height:100dvh;padding-top:8px}
+    .top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;flex-shrink:0}
+    .badge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:8px 12px;font-weight:700;color:#dcfce7;font-size:13px}
+    .title{text-align:center;font-size:22px;font-weight:900;margin:4px 0 2px;flex-shrink:0}
+    .sub{text-align:center;color:#bbf7d0;font-size:12px;margin:0 0 8px;flex-shrink:0}
+    .grid-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:380px;}
+    .hole{aspect-ratio:1/1;border-radius:50%;background:radial-gradient(circle at 50% 40%,#52525b,#3f3f46 60%,#27272a 100%);position:relative;overflow:hidden;border:4px solid #57534e;box-shadow:inset 0 8px 18px rgba(0,0,0,.25),0 10px 20px rgba(0,0,0,.18);cursor:pointer}
+    .mole{position:absolute;left:50%;bottom:-62%;transform:translateX(-50%) scale(1);width:70%;height:70%;transition:bottom .15s,transform .15s;pointer-events:none}
+    .hole.up .mole{bottom:8%;animation:bounce .28s ease}
+    .hole.hit .mole{transform:translateX(-50%) scale(.9) rotate(-10deg)}
+    .hammer{position:absolute;right:-2px;top:-4px;font-size:30px;opacity:0;transform:rotate(-40deg) translateY(-12px);pointer-events:none}
+    .hole.hit .hammer{opacity:1;transform:rotate(-10deg) translateY(12px);transition:.12s ease}
+    @keyframes bounce{0%{transform:translateX(-50%) scale(.88)}55%{transform:translateX(-50%) scale(1.06)}100%{transform:translateX(-50%) scale(1)}}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px 0;flex-shrink:0}
+    .btn,.back{border:none;border-radius:14px;padding:12px;font-size:14px;font-weight:800;color:#fff;background:rgba(255,255,255,.12);text-decoration:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
+    #overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;place-items:center;z-index:200}
+    #overlay.show{display:grid}
+    #overlay-content{background:linear-gradient(180deg,#1f2937,#166534);border:2px solid rgba(255,255,255,.25);border-radius:24px;padding:32px 40px;text-align:center;animation:popup .35s ease}
+    @keyframes popup{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+    #overlay h2{font-size:36px;margin:0 0 8px}
+    #overlay .final-score{font-size:60px;font-weight:900;color:#fde047;margin:0 0 6px}
+    #overlay p{font-size:18px;margin:0 0 20px;color:#bbf7d0}
+    #overlay .btn{margin:0 auto;font-size:16px;padding:14px 32px;background:linear-gradient(180deg,#16a34a,#15803d);border-radius:14px}
   </style>
 </head>
 <body>
-<div class="wrap"><div class="top"><div class="badge" id="score">分数：0</div><div class="badge" id="best">最高：0</div><div class="badge" id="difficultyBtn">难度：普通</div><div class="badge" id="time">时间：30</div></div><div class="title">地鼠嘉年华场</div><div class="sub">嘉年华摊位风格，地鼠冒头就砸，拼速度和命中</div><div class="grid" id="grid"></div><div id="overlay"><div id="overlay-content"><h2 id="ovTitle">游戏结束</h2><div class="final-score" id="ovScore">0</div><p id="ovMsg">分</p><button class="btn" id="ovRestart">再玩一次</button></div></div><div class="actions"><a class="back" href="/ethan/">返回首页</a><button class="btn" id="restart">重新开始</button></div></div>
+<div class="wrap">
+  <div class="top">
+    <div class="badge" id="score">分数：0</div>
+    <div class="badge" id="best">最高：0</div>
+    <div class="badge" id="difficultyBtn">难度：普通</div>
+    <div class="badge" id="time">时间：30</div>
+  </div>
+  <div class="title">地鼠嘉年华场</div>
+  <div class="sub">嘉年华摊位风格，地鼠冒头就砸，拼速度和命中</div>
+  <div class="grid-wrap"><div class="grid" id="grid"></div></div>
+  <div id="overlay">
+    <div id="overlay-content">
+      <h2 id="ovTitle">游戏结束</h2>
+      <div class="final-score" id="ovScore">0</div>
+      <p id="ovMsg">分</p>
+      <button class="btn" id="ovRestart">再玩一次</button>
+    </div>
+  </div>
+  <div class="actions">
+    <a class="back" href="/ethan/">返回首页</a>
+    <button class="btn" id="restart">重新开始</button>
+  </div>
+</div>
 <script>
-const grid=document.getElementById('grid'),scoreEl=document.getElementById('score'),bestEl=document.getElementById('best'),timeEl=document.getElementById('time');let score=0,best=Number(localStorage.getItem('ethan-mole-best')||0),time=30,active=-1,over=false,timer=null,stars=[];const audioCtx=new (window.AudioContext||window.webkitAudioContext)();function hitSound(){if(audioCtx.state==='suspended')audioCtx.resume();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='square';o.frequency.setValueAtTime(180,audioCtx.currentTime);o.frequency.exponentialRampToValueAtTime(90,audioCtx.currentTime+.08);g.gain.setValueAtTime(.001,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.09,audioCtx.currentTime+.01);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.1);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.11);}const variants=[['#a16207','#d6a46b','#7c2d12'],['#92400e','#d6a46b','#7c2d12'],['#78350f','#e7c48f','#7c2d12']];function moleSVG(v,hit=false){const [fur,face,nose]=v;const eye=hit?'x':'o';return `<svg viewBox="0 0 100 100" width="100%" height="100%"><ellipse cx="50" cy="68" rx="28" ry="24" fill="${fur}"/><ellipse cx="50" cy="55" rx="26" ry="24" fill="${fur}"/><ellipse cx="36" cy="33" rx="8" ry="9" fill="${fur}"/><ellipse cx="64" cy="33" rx="8" ry="9" fill="${fur}"/><ellipse cx="36" cy="33" rx="5" ry="6" fill="${face}"/><ellipse cx="64" cy="33" rx="5" ry="6" fill="${face}"/><text x="38" y="56" font-size="10" fill="#111827">${eye}</text><text x="54" y="56" font-size="10" fill="#111827">${eye}</text><ellipse cx="50" cy="63" rx="15" ry="12" fill="${face}"/><ellipse cx="50" cy="62" rx="6" ry="5" fill="${nose}"/><rect x="38" y="72" width="8" height="8" rx="4" fill="#fff"/><rect x="54" y="72" width="8" height="8" rx="4" fill="#fff"/></svg>`;}
-const variantsPerHole=[];for(let i=0;i<9;i++){const v=variants[Math.floor(Math.random()*variants.length)];variantsPerHole.push(v);const d=document.createElement('div');d.className='hole';d.innerHTML=`<div class="mole">${moleSVG(v)}</div><div class="hammer">🔨</div>`;d.addEventListener('click',()=>hit(i));grid.appendChild(d);}const holes=[...document.querySelectorAll('.hole')];function hud(){scoreEl.textContent=`分数：${score}`;bestEl.textContent=`最高：${best}`;timeEl.textContent=`时间：${Math.ceil(time)}`;}function pop(){if(over)return;holes.forEach(h=>{h.classList.remove('up');h.classList.remove('hit');h.style.boxShadow='';});active=Math.floor(Math.random()*9);holes[active].querySelector('.mole').innerHTML=moleSVG(variantsPerHole[active]);holes[active].classList.add('up');timer=setTimeout(pop,420+Math.random()*350);}function hit(i){if(over)return;if(i===active){hitSound();score+=10;if(score>best){best=score;localStorage.setItem('ethan-mole-best',String(best));}stars.push({i,life:.6});holes[i].classList.add('hit');holes[i].querySelector('.mole').innerHTML=moleSVG(variantsPerHole[i],true);setTimeout(()=>holes[i].classList.remove('up'),120);active=-1;hud();}}
-function reset(){score=0;time=30;over=false;active=-1;stars=[];clearTimeout(timer);hud();pop();}document.getElementById('restart').addEventListener('click',reset);setInterval(()=>{if(over)return;time-=1;if(time<=0){time=0;over=true;clearTimeout(timer);holes.forEach(h=>h.classList.remove('up'));const isNewBest=score>=best&&score>0;if(isNewBest)endJingle('win');else endJingle('lose');setTimeout(showOverlay,400);}hud();},1000);setInterval(()=>{stars=stars.filter(s=>(s.life-=.08)>0);stars.forEach(s=>{const hole=holes[s.i];hole.style.boxShadow='0 0 18px rgba(250,204,21,'+s.life+')';setTimeout(()=>{if(hole)hole.style.boxShadow='';},120);});},1000/6);hud();pop();
-const difficultyBtn = document.getElementById('difficultyBtn'); let difficulty = localStorage.getItem('ethan-mole-difficulty') || 'normal'; const diffLabelMap={easy:'简单',normal:'普通',hard:'困难'}; if(difficultyBtn){ difficultyBtn.textContent='难度：'+diffLabelMap[difficulty]; difficultyBtn.addEventListener('click',()=>{ difficulty = difficulty==='easy'?'normal':difficulty==='normal'?'hard':'easy'; localStorage.setItem('ethan-mole-difficulty', difficulty); difficultyBtn.textContent='难度：'+diffLabelMap[difficulty]; location.reload(); }); }
+(function(){
+  const grid=document.getElementById('grid'),scoreEl=document.getElementById('score'),bestEl=document.getElementById('best'),timeEl=document.getElementById('time');
+  let score=0,best=Number(localStorage.getItem('ethan-mole-best')||0),time=30,active=-1,over=false,timer=null,interval=null;
+  const audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+
+  function hitSound(){if(audioCtx.state==='suspended')audioCtx.resume();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='square';o.frequency.setValueAtTime(180,audioCtx.currentTime);o.frequency.exponentialRampToValueAtTime(90,audioCtx.currentTime+.08);g.gain.setValueAtTime(.001,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.09,audioCtx.currentTime+.01);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.1);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.11);}
+
+  function endJingle(kind){
+    if(audioCtx.state==='suspended')audioCtx.resume();
+    const seq=kind==='win'?[523.25,659.25,783.99,1046.5]:[392,311.13,220,185];
+    const types=kind==='win'?['triangle','triangle','triangle','sine']:['sawtooth','triangle','sine','sawtooth'];
+    seq.forEach(function(f,i){
+      var o=audioCtx.createOscillator();var g=audioCtx.createGain();
+      o.type=types[i];o.frequency.setValueAtTime(f,audioCtx.currentTime+i*0.18);
+      g.gain.setValueAtTime(.001,audioCtx.currentTime+i*0.18);
+      g.gain.exponentialRampToValueAtTime(.1,audioCtx.currentTime+i*0.18+.02);
+      g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+i*0.18+.22);
+      o.connect(g);g.connect(audioCtx.destination);
+      o.start(audioCtx.currentTime+i*0.18);o.stop(audioCtx.currentTime+i*0.18+.25);
+    });
+  }
+
+  function showOverlay(){
+    var isNew=score>=best&&score>0;
+    document.getElementById('ovTitle').textContent=isNew?'🎉 新纪录!':'游戏结束';
+    document.getElementById('ovScore').textContent=score;
+    document.getElementById('ovMsg').textContent=isNew?'最高分！太厉害了！':'分';
+    document.getElementById('overlay').classList.add('show');
+  }
+
+  function hud(){
+    scoreEl.textContent='分数：'+score;
+    bestEl.textContent='最高：'+best;
+    timeEl.textContent='时间：'+Math.ceil(time);
+  }
+
+  var variants=[['#a16207','#d6a46b','#7c2d12'],['#92400e','#d6a46b','#7c2d12'],['#78350f','#e7c48f','#7c2d12']];
+  function moleSVG(v,hit){
+    var fur=v[0],face=v[1],nose=v[2];
+    var eye=hit?'x':'o';
+    return '<svg viewBox="0 0 100 100" width="100%" height="100%"><ellipse cx="50" cy="68" rx="28" ry="24" fill="'+fur+'"/><ellipse cx="50" cy="55" rx="26" ry="24" fill="'+fur+'"/><ellipse cx="36" cy="33" rx="8" ry="9" fill="'+fur+'"/><ellipse cx="64" cy="33" rx="8" ry="9" fill="'+fur+'"/><ellipse cx="36" cy="33" rx="5" ry="6" fill="'+face+'"/><ellipse cx="64" cy="33" rx="5" ry="6" fill="'+face+'"/><text x="38" y="56" font-size="10" fill="#111827">'+eye+'</text><text x="54" y="56" font-size="10" fill="#111827">'+eye+'</text><ellipse cx="50" cy="63" rx="15" ry="12" fill="'+face+'"/><ellipse cx="50" cy="62" rx="6" ry="5" fill="'+nose+'"/><rect x="38" y="72" width="8" height="8" rx="4" fill="#fff"/><rect x="54" y="72" width="8" height="8" rx="4" fill="#fff"/></svg>';
+  }
+
+  var variantsPerHole=[];
+  var holes=[];
+  for(var i=0;i<9;i++){
+    var v=variants[Math.floor(Math.random()*variants.length)];
+    variantsPerHole.push(v);
+    var d=document.createElement('div');
+    d.className='hole';
+    d.innerHTML='<div class="mole">'+moleSVG(v,false)+'</div><div class="hammer">🔨</div>';
+    var idx=i;
+    d.addEventListener('click',function(i){return function(){hit(i);};}(i));
+    d.addEventListener('touchstart',function(e){e.preventDefault();hit(this);}.bind(i),{passive:false});
+    grid.appendChild(d);
+    holes.push(d);
+  }
+
+  function pop(){
+    if(over)return;
+    holes.forEach(function(h){h.classList.remove('up');h.classList.remove('hit');});
+    active=Math.floor(Math.random()*9);
+    holes[active].querySelector('.mole').innerHTML=moleSVG(variantsPerHole[active],false);
+    holes[active].classList.add('up');
+    var delay=420+Math.random()*350;
+    var diff=difficulty||'normal';
+    if(diff==='easy')delay+=80;else if(diff==='hard')delay-=60;
+    timer=setTimeout(pop,delay);
+  }
+
+  function hit(i){
+    if(over)return;
+    if(i===active){
+      hitSound();
+      score+=10;
+      if(score>best){best=score;localStorage.setItem('ethan-mole-best',String(best));}
+      holes[i].classList.add('hit');
+      holes[i].querySelector('.mole').innerHTML=moleSVG(variantsPerHole[i],true);
+      setTimeout(function(){holes[i].classList.remove('up','hit');},120);
+      active=-1;
+      hud();
+    }
+  }
+
+  function reset(){
+    score=0;time=30;over=false;active=-1;
+    clearTimeout(timer);clearInterval(interval);
+    hud();
+    pop();
+    interval=setInterval(tick,1000);
+  }
+
+  function tick(){
+    if(over)return;
+    time-=1;
+    hud();
+    if(time<=0){
+      time=0;over=true;clearTimeout(timer);clearInterval(interval);
+      holes.forEach(function(h){h.classList.remove('up','hit');});
+      var isNew=score>=best&&score>0;
+      endJingle(isNew?'win':'lose');
+      setTimeout(showOverlay,400);
+    }
+  }
+
+  document.getElementById('restart').addEventListener('click',reset);
+  document.getElementById('ovRestart').addEventListener('click',function(){
+    document.getElementById('overlay').classList.remove('show');
+    reset();
+  });
+
+  var difficultyBtn=document.getElementById('difficultyBtn');
+  var difficulty=localStorage.getItem('ethan-mole-difficulty')||'normal';
+  var diffLabel={easy:'简单',normal:'普通',hard:'困难'};
+  difficultyBtn.textContent='难度：'+diffLabel[difficulty];
+  difficultyBtn.addEventListener('click',function(){
+    difficulty=difficulty==='easy'?'normal':difficulty==='normal'?'hard':'easy';
+    localStorage.setItem('ethan-mole-difficulty',difficulty);
+    difficultyBtn.textContent='难度：'+diffLabel[difficulty];
+    location.reload();
+  });
+
+  hud();
+  pop();
+  interval=setInterval(tick,1000);
+})();
 </script>
 </body>
 </html>
