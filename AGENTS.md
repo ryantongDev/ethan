@@ -238,6 +238,78 @@ The goal: Be helpful without being annoying. Check in a few times a day, do usef
 5. **一句话优先，详细版按需展开**
    - 默认先给一句话版结论；用户追问时再展开。
 
+## Discord 响应规则（所有小弟统一遵守）
+
+**核心原则：永远不让 Discord 线程超时等待。**
+
+- 任务不能在 10 秒内明确回答 → 立即确认收到 → 告知将异步完成
+- 将任务写入 `projects/tasks/XXX.md`
+- 启动工作流驱动执行
+- 结果出来后主动推送
+
+**禁止：** 在 Discord 线程里同步等待超时。
+
+---
+
+## YouTube 频道项目（Ryan / ryan.tong.dev）
+
+### 基本信息
+- 频道名：**游资逻辑**（Smart Money Logic）
+- Discord 频道：`#youtube-lab`（id: 1492743862932869233）
+- 审查服务器：`http://43.159.170.184:38459`
+- 内容定位：技术分析教学短视频，不构成投资建议
+- **⚠️ 每次学完新视频 → 必须同步更新到 `#a股操盘手`（id: 1493423477317828800）作为炒股参考手册**
+
+### 视频规格（已确认标准）
+- 尺寸：横屏 1920×1080 / 竖屏 1080×1920
+- 帧率：30fps，编码 h264 yuv420p
+- 时长：约60-90秒（讲2-3个知识点）
+- 背景：AI图片全屏铺满，scale+crop到目标尺寸，**无顶部标题条**
+- 字体：NotoSansCJK-Bold.ttc（标题）/ NotoSansCJK-Regular.ttc（正文）
+
+### 语音标准
+- 英文首选：`en-US-GuyNeural`（男声，专业感强）
+- 中文：`zh-CN-YunxiNeural`
+- TTS工具：`/root/.openclaw/extensions/memory-tdai/node_modules/.pnpm/node-edge-tts@1.2.10/node_modules/node-edge-tts/bin.js`
+
+### ⚠️ 重要规则（已踩过的坑）
+- ❌ 不要加顶部绿色条 → Ryan 明确不要任何header/bar，纯图片背景
+- ❌ 不要用 JennyNeural → 太合成，Ryan 不满意
+- ❌ 不要用外部链接 → 只能用审查服务器地址
+- ✅ 横屏效果更好 → 默认方向
+- ✅ GuyNeural + 纯图背景 → 最终生产标准
+
+### 📁 文件命名规范
+```
+video01_trend_ma_chinese.mp4
+video01_trend_ma_english.mp4
+video02_volume_chinese.mp4
+video02_volume_english.mp4
+video03_position_chinese.mp4
+video03_position_english.mp4
+```
+
+### 🔄 标准制作流程
+1. **文案确认** → 按主题拆分为3段落，提供中英文两套文案
+2. **素材收集** → Ryan 提供对应段落的 AI 图片（1200×670 横 / 572×1024 竖）
+3. **TTS配音** → 按段落生成音频文件
+4. **逐段落生成视频** → ffmpeg 合成图片+音频
+5. **拼接 + 发布** → ffmpeg concat 合并最终视频
+6. **更新手册** → 每次学习新视频内容后，更新到 `#a股操盘手`（id: 1493423477317828800）作为炒股参考手册
+
+---
+
+### 3️⃣ AI Agents for A股分析
+
+| Agent名 | 地址 | 特点 | 用途 |
+|--------|------|------|------|
+| **TradingAgents-AShare** | https://github.com/KylinMountain/TradingAgents-AShare | 14名AI Agent多空辩论，支持OpenClaw技能 | A股深度投研分析，模拟机构决策 |
+| **aiagents-stock** | https://github.com/oficcejo/aiagents-stock | 复合多AI分析，批量盯盘，支持量化接口 | 股票分析、龙虎榜跟踪、板块预警 |
+
+**使用方式**：分析股票时可调用这些Agents协助分析，提供多维度AI视角
+
+---
+
 ## Make It Yours
 
 This is a starting point. Add your own conventions, style, and rules as you figure out what works.
