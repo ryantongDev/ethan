@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Geometry Dash</title>
+  <style>
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    body{margin:0;min-height:100dvh;background:#0f0f23;overflow:hidden;touch-action:manipulation;user-select:none}
+    .topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 14px 8px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.08)}
+    .badge{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:7px 14px;font-weight:700;color:#e0f2fe;font-size:13px}
+    .title{text-align:center;font-size:20px;font-weight:900;color:#38bdf8;margin:0}
+    .game-wrap{display:flex;justify-content:center;align-items:center;padding:10px}
+    canvas{display:block;width:100%;max-width:600px;aspect-ratio:16/9;background:#0a0a1a;border:2px solid rgba(56,189,248,.3);border-radius:12px;box-shadow:0 0 30px rgba(56,189,248,.15)}
+    .bottom-bar{display:flex;justify-content:center;gap:12px;padding:8px 14px 12px;background:rgba(255,255,255,.04);border-top:1px solid rgba(255,255,255,.08)}
+    .btn{background:linear-gradient(180deg,#0ea5e9,#0369a1);border:none;border-radius:14px;padding:12px 28px;font-size:15px;font-weight:800;color:#fff;cursor:pointer;box-shadow:0 4px 12px rgba(14,165,233,.3)}
+    .hint{text-align:center;color:rgba(255,255,255,.35);font-size:12px;padding:0 0 8px}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="badge" id="score">得分：0</div>
+    <div class="title">Geometry Dash</div>
+    <div class="badge" id="best">最高：0</div>
+  </div>
+  <div class="game-wrap">
+    <canvas id="c" width="960" height="540"></canvas>
+  </div>
+  <div class="hint">点击 / 空格 / 触摸 跳跃 🟢 = 单跳 &nbsp;&nbsp; 🔵 = 需要小心</div>
+  <div class="bottom-bar">
+    <button class="btn" id="restartBtn">重新开始</button>
+    <button class="btn" id="homeBtn" style="background:linear-gradient(180deg,#374151,#1f2937)">返回主页</button>
+  </div>
+
+<script>
+(function(){
+  var canvas=document.getElementById('c');
+  var ctx=canvas.getContext('2d');
+  var W=canvas.width;
+  var H=canvas.height;
+  var GROUND=H-90;
+
+  var audioCtx=null;
+  function getAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+  function tone(freq,dur,type,vol){
+    try{
+      var ac=getAudio();
+      if(ac.state==='suspended')ac.resume();
+      var o=ac.createOscillator(),g=ac.createGain();
+      o.type=type||'square';
+      o.frequency.setValueAtTime(freq,ac.currentTime);
+      g.gain.setValueAtTime(.001,ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(vol||.06,ac.currentTime+.01);
+      g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+dur);
+      o.connect(g);g.connect(ac.destination);
+      o.start();o.stop(ac.currentTime+dur+.02);
+    }catch(e){}
+  }
+  function jumpSound(){tone(420,.1,'square',.05);setTimeout(function(){tone(560,.08,'square',.04);},60);}
+  function deathSound(){tone(200,.15,'sawtooth',.07);setTimeout(function(){tone(100,.2,'sawtooth',.05);},100);}
+  function milestoneSound(){tone(523,.1,'triangle',.08);setTimeout(function(){tone(659,.1,'triangle',.08);},120);setTimeout(function(){tone(784,.15,'triangle',.08);},240);}
+
+  var score=0;
+  var best=Number(localStorage.getItem('ethan-dash-best')||0);
+  var over=false;
+  var frame=0;
+  var speed=5;
+  var tick=0;
+  var obstacles=[];
+  var particles=[];
+  var lastMilestone=0;
+
+  var cube={
+    x:120,
+    y:GROUND-40,
+    w:40,
+    h:40,
+    vy:0,
+    gravity:0.65,
+    jumpForce:-13,
+    grounded:true,
+    dead:false,
+    rot:0,
+    eyeY:0
+  };
+
+  function reset(){
+    cube={x:120,y:GROUND-40,w:40,h:40,vy:0,gravity:0.65,jumpForce:-13,grounded:true,dead:false,rot:0,eyeY:0};
+    obstacles=[];particles=[];
+    score=0;over=false;frame=0;speed=5;tick=0;lastMilestone=0;
+    document.getElementById('score').textContent='得分：0';
+    document.getElementById('best').textContent='最高：'+best;
+  }
+
+  function jump(){
+    if(over||cube.dead)return;
+    if(cube.grounded){
+      cube.vy=cube.jumpForce;
+      cube.grounded=false;
+      cube.rot=0;
+      jumpSound();
+    }
+  }
+
+  function spawnObs(){
+    var top=Math.random()<0.5;
+    var h=45+Math.random()*35;
+    var w=38+Math.random()*25;
+    var x=W+20;
+    var y=top?(GROUND-h-60-60):(GROUND-h);
+    obstacles.push({x:x,y:y,w:w,h:h,top:top,passed:false,flash:0,spike:Math.random()<.4});
+  }
+
+  function boom(x,y,color){
+    for(var i=0;i<12;i++){
+      particles.push({
+        x:x,y:y,
+        vx:(Math.random()-.5)*280,
+        vy:(Math.random()-.5)*180-60,
+        life:.4+Math.random()*.3,
+        color:color||'#38bdf8',
+        r:3+Math.random()*4
+      });
+    }
+  }
+
+  function die(){
+    cube.dead=true;
+    deathSound();
+    boom(cube.x+cube.w/2,cube.y+cube.h/2,'#f87171');
+    if(score>best){
+      best=score;
+      localStorage.setItem('ethan-dash-best',String(best));
+      document.getElementById('best').textContent='最高：'+best;
+    }
+    setTimeout(function(){over=true;},600);
+  }
+
+  function checkObs(){
+    var cx=cube.x+cube.w*.3;
+    var cy=cube.y+cube.h*.3;
+    var cw=cube.w*.4;
+    var ch=cube.h*.4;
+    for(var i=0;i<obstacles.length;i++){
+      var o=obstacles[i];
+      if(!o.passed && o.x<cube.x+cube.w){
+        o.passed=true;
+        score++;
+        document.getElementById('score').textContent='得分：'+score;
+        var ms=Math.floor(score/10)*10;
+        if(ms>0 && ms>lastMilestone){
+          lastMilestone=ms;
+          milestoneSound();
+        }
+      }
+      var ox1=o.x+o.flash>0?o.x+o.flash:o.x;
+      var ox2=o.x+(o.spike?0:o.w);
+      if(cx<ox2&&cx+cw>ox1&&cy<o.y+o.h&&cy+ch>o.y){
+        die();
+        return;
+      }
+    }
+  }
+
+  function update(){
+    if(over)return;
+    frame++;
+
+    // speed ramp
+    speed=5+Math.floor(score/8)*0.6;
+
+    // jump physics
+    cube.vy+=cube.gravity;
+    cube.y+=cube.vy;
+    cube.rot+=cube.grounded?0:(cube.vy<0?5:-5);
+
+    // ground check
+    if(cube.y+cube.h>=GROUND){
+      cube.y=GROUND-cube.h;
+      cube.vy=0;
+      cube.grounded=true;
+      cube.rot=Math.round(cube.rot/90)*90;
+    }
+
+    // spawn obstacles
+    tick++;
+    var gap=Math.max(42,72-Math.floor(score/6)*2);
+    if(tick%gap===0){
+      spawnObs();
+      if(Math.random()<.35)spawnObs();
+    }
+
+    // move obstacles
+    for(var i=obstacles.length-1;i>=0;i--){
+      obstacles[i].x-=speed;
+      if(obstacles[i].flash>0)obstacles[i].flash-=0.5;
+      if(obstacles[i].x+o.w<-40)obstacles.splice(i,1);
+    }
+
+    // particles
+    for(var i=particles.length-1;i>=0;i--){
+      var p=particles[i];
+      p.x+=p.vx*0.016;
+      p.y+=p.vy*0.016;
+      p.vy+=8;
+      p.life-=0.016;
+      if(p.life<=0)particles.splice(i,1);
+    }
+
+    checkObs();
+  }
+
+  function drawBg(){
+    // gradient sky
+    var g=ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#0f0f23');
+    g.addColorStop(1,'#1a1a3e');
+    ctx.fillStyle=g;
+    ctx.fillRect(0,0,W,H);
+
+    // ground
+    ctx.fillStyle='#1e1e4a';
+    ctx.fillRect(0,GROUND,W,H-GROUND);
+
+    // ground line glow
+    ctx.strokeStyle='#38bdf8';
+    ctx.lineWidth=3;
+    ctx.shadowColor='#38bdf8';
+    ctx.shadowBlur=12;
+    ctx.beginPath();
+    ctx.moveTo(0,GROUND);
+    ctx.lineTo(W,GROUND);
+    ctx.stroke();
+    ctx.shadowBlur=0;
+
+    // grid lines on ground
+    ctx.strokeStyle='rgba(56,189,248,.1)';
+    ctx.lineWidth=1;
+    var offset=(frame*speed)%80;
+    for(var i=-1;i<W/80+1;i++){
+      ctx.beginPath();
+      ctx.moveTo(i*80-offset,GROUND);
+      ctx.lineTo(i*80-offset+40,GROUND+60);
+      ctx.stroke();
+    }
+  }
+
+  function drawCube(){
+    ctx.save();
+    ctx.translate(cube.x+cube.w/2,cube.y+cube.h/2);
+    ctx.rotate(cube.rot*Math.PI/180);
+
+    // cube body
+    var grad=ctx.createLinearGradient(-cube.w/2,-cube.h/2,cube.w/2,cube.h/2);
+    grad.addColorStop(0,'#0ea5e9');
+    grad.addColorStop(1,'#0369a1');
+    ctx.fillStyle=grad;
+    ctx.fillRect(-cube.w/2,-cube.h/2,cube.w,cube.h);
+
+    // border glow
+    ctx.strokeStyle='rgba(56,189,248,.6)';
+    ctx.lineWidth=2;
+    ctx.strokeRect(-cube.w/2,-cube.h/2,cube.w,cube.h);
+
+    // eye
+    ctx.fillStyle='#fff';
+    ctx.beginPath();
+    ctx.arc(6,-4,cube.h*.15,0,Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle='#0a0a1a';
+    ctx.beginPath();
+    ctx.arc(7,-3,4,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function drawObs(o){
+    var alpha=o.flash>0?.5+o.flash*.5:1;
+    ctx.save();
+    if(o.top){
+      ctx.translate(o.x+o.w/2,o.y+o.h);
+      if(o.spike){
+        ctx.fillStyle='rgba(248,113,113,'+alpha+')';
+        ctx.beginPath();
+        ctx.moveTo(-o.w/2,o.h);
+        ctx.lineTo(0,0);
+        ctx.lineTo(o.w/2,o.h);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle='rgba(255,100,100,.8)';
+        ctx.lineWidth=2;
+        ctx.stroke();
+      }else{
+        ctx.fillStyle='rgba(168,85,247,'+alpha+')';
+        ctx.fillRect(-o.w/2,0,o.w,o.h);
+        ctx.strokeStyle='rgba(192,132,252,.8)';
+        ctx.lineWidth=2;
+        ctx.strokeRect(-o.w/2,0,o.w,o.h);
+      }
+    }else{
+      if(o.spike){
+        ctx.fillStyle='rgba(248,113,113,'+alpha+')';
+        ctx.beginPath();
+        ctx.moveTo(o.x,-1);
+        ctx.lineTo(o.x+o.w/2,o.h);
+        ctx.lineTo(o.x+o.w,-1);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle='rgba(255,100,100,.8)';
+        ctx.lineWidth=2;
+        ctx.stroke();
+      }else{
+        ctx.fillStyle='rgba(168,85,247,'+alpha+')';
+        ctx.fillRect(o.x,o.y,o.w,o.h);
+        ctx.strokeStyle='rgba(192,132,252,.8)';
+        ctx.lineWidth=2;
+        ctx.strokeRect(o.x,o.y,o.w,o.h);
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawParticles(){
+    particles.forEach(function(p){
+      ctx.globalAlpha=Math.max(0,p.life);
+      ctx.fillStyle=p.color;
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fill();
+      ctx.globalAlpha=1;
+    });
+  }
+
+  function draw(){
+    drawBg();
+    obstacles.forEach(function(o){drawObs(o);});
+    drawCube();
+    drawParticles();
+
+    if(over){
+      ctx.fillStyle='rgba(0,0,0,.5)';
+      ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='#fff';
+      ctx.textAlign='center';
+      ctx.font='bold 56px Arial';
+      ctx.fillText('游戏结束',W/2,H/2-50);
+      ctx.font='32px Arial';
+      ctx.fillText('得分：'+score,W/2,H/2+10);
+      ctx.font='22px Arial';
+      ctx.fillStyle='rgba(255,255,255,.6)';
+      ctx.fillText('点任意处重新开始',W/2,H/2+50);
+      ctx.textAlign='left';
+    }
+  }
+
+  function loop(){
+    update();
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  // input
+  document.addEventListener('keydown',function(e){
+    if(e.key===' '||e.key==='Spacebar'||e.key==='ArrowUp'){
+      e.preventDefault();
+      if(over){reset();return;}
+      jump();
+    }
+  });
+  document.addEventListener('click',function(){
+    if(over){reset();return;}
+    jump();
+  });
+  canvas.addEventListener('touchstart',function(e){
+    e.preventDefault();
+    if(over){reset();return;}
+    jump();
+  },{passive:false});
+  document.getElementById('restartBtn').addEventListener('click',reset);
+  document.getElementById('homeBtn').addEventListener('click',function(){location.href='/ethan/';});
+
+  document.getElementById('best').textContent='最高：'+best;
+  reset();
+  loop();
+})();
+</script>
+</body>
+</html>
