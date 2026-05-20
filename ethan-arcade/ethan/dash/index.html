@@ -29,6 +29,7 @@
   <div class="hint">点击 / 空格 / 触摸 跳跃 🟢 = 单跳 &nbsp;&nbsp; 🔵 = 需要小心</div>
   <div class="bottom-bar">
     <button class="btn" id="restartBtn">重新开始</button>
+    <button class="btn" id="musicBtn" style="background:linear-gradient(180deg,#475569,#374151)">音乐：关</button>
     <button class="btn" id="homeBtn" style="background:linear-gradient(180deg,#374151,#1f2937)">返回主页</button>
   </div>
 
@@ -56,6 +57,58 @@
       o.start();o.stop(ac.currentTime+dur+.02);
     }catch(e){}
   }
+  var musicOn=false,musicTimer=null;
+  var musicBtn=document.getElementById('musicBtn');
+  function bgNote(freq,dur,type,gain){
+    try{
+      var ac=getAudio();
+      if(ac.state==='suspended')ac.resume();
+      var o=ac.createOscillator(),g=ac.createGain();
+      o.type=type||'triangle';o.frequency.setValueAtTime(freq,ac.currentTime);
+      g.gain.setValueAtTime(.001,ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(gain||.012,ac.currentTime+.015);
+      g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+dur);
+      o.connect(g);g.connect(ac.destination);
+      o.start();o.stop(ac.currentTime+dur+.02);
+    }catch(e){}
+  }
+  var musicProg=[];
+  function buildSong(){
+    var bpm=150,beat=60/bpm;
+    // 8-bar loop in C minor
+    var notes=[
+      [261,0.5],[277,0.5],[293,0.5],[311,0.5],
+      [261,0.5],[246,0.5],[220,0.5],[207,0.5],
+      [220,0.5],[233,0.5],[246,0.5],[261,0.5],
+      [293,0.5],[329,0.5],[349,0.5],[329,0.5],
+      [261,0.5],[277,0.5],[293,0.5],[311,0.5],
+      [261,0.5],[246,0.5],[220,0.5],[207,0.5],
+      [220,0.5],[233,0.5],[246,0.5],[261,0.5],
+      [293,0.5],[329,0.5],[349,0.5],[392,0.5]
+    ];
+    musicProg=notes.map(function(n){return{freq:n[0],dur:n[1]*beat*0.9,type:'sine',gain:.01};});
+  }
+  function musicLoop(){
+    if(!musicOn)return;
+    musicProg.forEach(function(n,i){
+      setTimeout(function(){bgNote(n.freq,n.dur,n.type,n.gain);},i*150);
+    });
+    musicTimer=setTimeout(musicLoop,musicProg.length*150);
+  }
+  function toggleMusic(){
+    musicOn=!musicOn;
+    if(musicBtn)musicBtn.textContent='音乐：'+(musicOn?'开':'关');
+    if(musicOn){
+      buildSong();
+      if(musicTimer)clearTimeout(musicTimer);
+      musicLoop();
+    }else{
+      if(musicTimer){clearTimeout(musicTimer);musicTimer=null;}
+    }
+  }
+  if(musicBtn)musicBtn.addEventListener('click',toggleMusic);
+  function stopMusic(){musicOn=false;if(musicBtn)musicBtn.textContent='音乐：关';if(musicTimer){clearTimeout(musicTimer);musicTimer=null;}}
+
   function jumpSound(){tone(420,.1,'square',.05);setTimeout(function(){tone(560,.08,'square',.04);},60);}
   function deathSound(){tone(200,.15,'sawtooth',.07);setTimeout(function(){tone(100,.2,'sawtooth',.05);},100);}
   function milestoneSound(){tone(523,.1,'triangle',.08);setTimeout(function(){tone(659,.1,'triangle',.08);},120);setTimeout(function(){tone(784,.15,'triangle',.08);},240);}
@@ -126,6 +179,7 @@
 
   function die(){
     cube.dead=true;
+    stopMusic();
     deathSound();
     boom(cube.x+cube.w/2,cube.y+cube.h/2,'#f87171');
     if(score>best){
