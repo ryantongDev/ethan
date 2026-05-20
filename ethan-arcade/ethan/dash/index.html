@@ -77,7 +77,7 @@
     h:40,
     vy:0,
     gravity:0.65,
-    jumpForce:-13,
+    jumpForce:-14.5,
     grounded:true,
     dead:false,
     rot:0,
@@ -103,12 +103,12 @@
   }
 
   function spawnObs(){
-    var top=Math.random()<0.5;
-    var h=45+Math.random()*35;
-    var w=38+Math.random()*25;
+    var top=Math.random()<0.42;
+    var h=36+Math.random()*24;
+    var w=36+Math.random()*20;
     var x=W+20;
-    var y=top?(GROUND-h-60-60):(GROUND-h);
-    obstacles.push({x:x,y:y,w:w,h:h,top:top,passed:false,flash:0,spike:Math.random()<.4});
+    var y=top?20:(GROUND-h);
+    obstacles.push({x:x,y:y,w:w,h:h,top:top,passed:false,flash:0,spike:Math.random()<.5});
   }
 
   function boom(x,y,color){
@@ -136,11 +136,10 @@
     setTimeout(function(){over=true;},600);
   }
 
+  function checkCollision(cx1,cy1,cx2,cy2,ox1,oy1,ox2,oy2){
+    return cx1<ox2 && cx2>ox1 && cy1<oy2 && cy2>oy1;
+  }
   function checkObs(){
-    var cx=cube.x+cube.w*.3;
-    var cy=cube.y+cube.h*.3;
-    var cw=cube.w*.4;
-    var ch=cube.h*.4;
     for(var i=0;i<obstacles.length;i++){
       var o=obstacles[i];
       if(!o.passed && o.x<cube.x+cube.w){
@@ -153,11 +152,18 @@
           milestoneSound();
         }
       }
-      var ox1=o.x+o.flash>0?o.x+o.flash:o.x;
-      var ox2=o.x+(o.spike?0:o.w);
-      if(cx<ox2&&cx+cw>ox1&&cy<o.y+o.h&&cy+ch>o.y){
-        die();
-        return;
+      var cx1=cube.x+4,cy1=cube.y+4,cx2=cube.x+cube.w-4,cy2=cube.y+cube.h-4;
+      var ox1=o.x,oy1=o.y,ox2=o.x+o.w,oy2=o.y+o.h;
+      if(!checkCollision(cx1,cy1,cx2,cy2,ox1,oy1,ox2,oy2))continue;
+      if(o.spike){die();return;}
+      // block: land on top if falling from above
+      var prevBottom=cube.y-cube.vy+cube.h;
+      if(!o.top && prevBottom<=oy1+6 && cube.y+cube.h<oy2){
+        cube.y=oy1-cube.h;
+        cube.vy=0;
+        cube.grounded=true;
+      }else{
+        die();return;
       }
     }
   }
@@ -279,19 +285,22 @@
     var alpha=o.flash>0?.5+o.flash*.5:1;
     ctx.save();
     if(o.top){
-      ctx.translate(o.x+o.w/2,o.y+o.h);
+      // ceiling obstacles
+      ctx.translate(o.x+o.w/2,o.y);
       if(o.spike){
+        // spike pointing DOWN
         ctx.fillStyle='rgba(248,113,113,'+alpha+')';
         ctx.beginPath();
-        ctx.moveTo(-o.w/2,o.h);
-        ctx.lineTo(0,0);
-        ctx.lineTo(o.w/2,o.h);
+        ctx.moveTo(-o.w/2,0);
+        ctx.lineTo(0,o.h);
+        ctx.lineTo(o.w/2,0);
         ctx.closePath();
         ctx.fill();
         ctx.strokeStyle='rgba(255,100,100,.8)';
         ctx.lineWidth=2;
         ctx.stroke();
       }else{
+        // block hanging from ceiling
         ctx.fillStyle='rgba(168,85,247,'+alpha+')';
         ctx.fillRect(-o.w/2,0,o.w,o.h);
         ctx.strokeStyle='rgba(192,132,252,.8)';
@@ -299,12 +308,15 @@
         ctx.strokeRect(-o.w/2,0,o.w,o.h);
       }
     }else{
+      // ground obstacles
+      ctx.translate(o.x+o.w/2,o.y+o.h);
       if(o.spike){
+        // spike pointing UP
         ctx.fillStyle='rgba(248,113,113,'+alpha+')';
         ctx.beginPath();
-        ctx.moveTo(o.x,-1);
-        ctx.lineTo(o.x+o.w/2,o.h);
-        ctx.lineTo(o.x+o.w,-1);
+        ctx.moveTo(-o.w/2,0);
+        ctx.lineTo(0,-o.h);
+        ctx.lineTo(o.w/2,0);
         ctx.closePath();
         ctx.fill();
         ctx.strokeStyle='rgba(255,100,100,.8)';
@@ -312,10 +324,10 @@
         ctx.stroke();
       }else{
         ctx.fillStyle='rgba(168,85,247,'+alpha+')';
-        ctx.fillRect(o.x,o.y,o.w,o.h);
+        ctx.fillRect(-o.w/2,-o.h,o.w,o.h);
         ctx.strokeStyle='rgba(192,132,252,.8)';
         ctx.lineWidth=2;
-        ctx.strokeRect(o.x,o.y,o.w,o.h);
+        ctx.strokeRect(-o.w/2,-o.h,o.w,o.h);
       }
     }
     ctx.restore();
