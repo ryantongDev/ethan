@@ -194,7 +194,7 @@
     for(var i=obstacles.length-1;i>=0;i--){
       obstacles[i].x-=speed;
       if(obstacles[i].flash>0)obstacles[i].flash-=0.5;
-      if(obstacles[i].x+o.w<-40)obstacles.splice(i,1);
+      if(obstacles[i].x+obstacles[i].w<-40)obstacles.splice(i,1);
     }
 
     // particles
