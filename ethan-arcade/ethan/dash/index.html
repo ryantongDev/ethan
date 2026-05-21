@@ -441,12 +441,13 @@
   function draw(){
     drawBg();
     obstacles.forEach(function(o){drawObs(o);});
-    // draw powerups
+    // draw powerups (use safe colors)
     powerups.forEach(function(pu){
+      var col=pu.type==='shield'?'250,204,21':pu.type==='slow'?'56,189,248':'168,85,247';
       var gradient=ctx.createRadialGradient(pu.x,pu.y,2,pu.x,pu.y,pu.r);
-      gradient.addColorStop(0,'rgba(255,255,255,.9)');
-      gradient.addColorStop(0.3,powerupColors[pu.type]+'.6');
-      gradient.addColorStop(1,powerupColors[pu.type]+'.15');
+      gradient.addColorStop(0,'rgba(255,255,255,.85)');
+      gradient.addColorStop(0.3,'rgba('+col+',.5)');
+      gradient.addColorStop(1,'rgba('+col+',.1)');
       ctx.fillStyle=gradient;
       ctx.beginPath();ctx.arc(pu.x,pu.y,pu.r,0,Math.PI*2);ctx.fill();
       ctx.font='22px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
@@ -479,8 +480,10 @@
   }
 
   function loop(){
-    update();
-    draw();
+    try{
+      update();
+      draw();
+    }catch(e){console.log(e);}
     requestAnimationFrame(loop);
   }
 
