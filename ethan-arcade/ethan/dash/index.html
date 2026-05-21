@@ -74,26 +74,65 @@
   }
   var musicProg=[];
   function buildSong(){
-    var bpm=150,beat=60/bpm;
-    // 8-bar loop in C minor
-    var notes=[
-      [261,0.5],[277,0.5],[293,0.5],[311,0.5],
-      [261,0.5],[246,0.5],[220,0.5],[207,0.5],
-      [220,0.5],[233,0.5],[246,0.5],[261,0.5],
-      [293,0.5],[329,0.5],[349,0.5],[329,0.5],
-      [261,0.5],[277,0.5],[293,0.5],[311,0.5],
-      [261,0.5],[246,0.5],[220,0.5],[207,0.5],
-      [220,0.5],[233,0.5],[246,0.5],[261,0.5],
-      [293,0.5],[329,0.5],[349,0.5],[392,0.5]
+    var bpm=145, beat=60/bpm;
+    musicProg=[];
+    // 4-chord progression: Cm | Bb | Ab | G (C natural minor)
+    var prog=[
+      {bass:130,chords:[261,311,349]},   // Cm
+      {bass:117,chords:[233,294,349]},   // Bb
+      {bass:104,chords:[207,262,311]},   // Ab
+      {bass:98, chords:[196,247,294]}    // G
     ];
-    musicProg=notes.map(function(n){return{freq:n[0],dur:n[1]*beat*0.9,type:'sine',gain:.01};});
+    // 16-beat melody
+    var mel=[261,311,349,392,392,349,311,261, 207,262,311,349,349,311,247,196];
+    // 8-bar loop
+    for(var m=0;m<8;m++){
+      var ch=prog[m%4];
+      for(var b=0;b<4;b++){
+        var t=(m*4+b)*beat*1000;
+        // Kick + bass on every beat
+        musicProg.push({t:t,items:[
+          {f:55,d:beat*0.3,tp:'sine',g:0.025},
+          {f:ch.bass,d:beat*0.85,tp:'sawtooth',g:0.005}
+        ]});
+        // Snare on beats 2 & 4
+        if(b%2)musicProg.push({t:t,items:[
+          {f:160,d:beat*0.08,tp:'sawtooth',g:0.008}
+        ]});
+        // Chord stabs on beats 1 & 3
+        if(b%2===0){
+          var cf=ch.chords;
+          musicProg.push({t:t,items:[
+            {f:cf[0],d:beat*0.4,tp:'triangle',g:0.005},
+            {f:cf[1],d:beat*0.4,tp:'triangle',g:0.005},
+            {f:cf[2],d:beat*0.4,tp:'triangle',g:0.005}
+          ]});
+        }
+        // Hi-hat on 8th notes
+        musicProg.push({t:t,items:[
+          {f:4000,d:beat*0.02,tp:'square',g:0.006}
+        ]});
+        // Melody on the beat
+        var mi=(m*4+b)%mel.length;
+        var mf=mel[mi];
+        var octave=mf<220?4:((mi%8<4)?4:3);
+        musicProg.push({t:t,items:[
+          {f:mf*Math.pow(2,octave-3),d:beat*0.8,tp:'square',g:0.004}
+        ]});
+      }
+    }
   }
   function musicLoop(){
     if(!musicOn)return;
-    musicProg.forEach(function(n,i){
-      setTimeout(function(){bgNote(n.freq,n.dur,n.type,n.gain);},i*150);
+    var maxT=0;
+    musicProg.forEach(function(n){
+      if(n.t>maxT)maxT=n.t;
+      setTimeout(function(){
+        if(!musicOn)return;
+        n.items.forEach(function(p){bgNote(p.f,p.d,p.tp,p.g);});
+      },n.t);
     });
-    musicTimer=setTimeout(musicLoop,musicProg.length*150);
+    musicTimer=setTimeout(musicLoop,maxT+200);
   }
   function toggleMusic(){
     musicOn=!musicOn;
