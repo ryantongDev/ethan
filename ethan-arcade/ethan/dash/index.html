@@ -534,16 +534,13 @@
     if(over){
       ctx.fillStyle='rgba(0,0,0,.5)';
       ctx.fillRect(0,0,W,H);
-      // active powerup indicators (right side)
-    ctx.textAlign='right';ctx.font='18px Arial';
-    var iy=8;
-    if(shield>0){ctx.fillStyle='#facc15';ctx.fillText('🛡️ '+shield.toFixed(0)+'s',W-20,iy);iy+=24;}
-    if(slow>0){ctx.fillStyle='#38bdf8';ctx.fillText('🐢 '+slow.toFixed(0)+'s',W-20,iy);iy+=24;}
-    if(doubleScore>0){ctx.fillStyle='#a855f7';ctx.fillText('✨ '+doubleScore.toFixed(0)+'s',W-20,iy);}
-    // GD-style game over
-    if(over){
-      ctx.fillStyle='rgba(0,0,0,.5)';
-      ctx.fillRect(0,0,W,H);
+      // powerup indicators (right side)
+      ctx.textAlign='right';ctx.font='18px Arial';
+      var iy=8;
+      if(shield>0){ctx.fillStyle='#facc15';ctx.fillText('🛡️ '+shield.toFixed(0)+'s',W-20,iy);iy+=24;}
+      if(slow>0){ctx.fillStyle='#38bdf8';ctx.fillText('🐢 '+slow.toFixed(0)+'s',W-20,iy);iy+=24;}
+      if(doubleScore>0){ctx.fillStyle='#a855f7';ctx.fillText('✨ '+doubleScore.toFixed(0)+'s',W-20,iy);}
+      // GD-style game over
       ctx.fillStyle='#fff';
       ctx.textAlign='center';
       ctx.font='bold 48px Arial';
