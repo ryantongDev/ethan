@@ -145,7 +145,7 @@
   function reset(){
     cube={x:120,y:GROUND-40,w:40,h:40,vy:0,gravity:0.65,jumpForce:-14.5,grounded:true,dead:false,rot:0,eyeY:0};
     obstacles=[];particles=[];powerups=[];
-    shield=0;slow=0;doubleScore=0;
+    shield=0;slow=0;doubleScore=0;invincible=0;
     score=0;over=false;frame=0;speed=5;tick=0;lastMilestone=0;
     document.getElementById('score').textContent='得分：0';
     document.getElementById('best').textContent='最高：'+best;
@@ -184,12 +184,23 @@
     }
   }
 
+  var invincible=0;
   function die(){
+    if(invincible>0)return;
     if(shield>0){
-      shield=0;
+      shield=0;invincible=0.5;
+      // push cube up
+      cube.vy=-8;
+      // destroy the obstacle that hit us
+      if(obstacles.length>0){
+        var closest=0,curx=9999;
+        for(var ii=0;ii<obstacles.length;ii++){
+          if(obstacles[ii].x<curx){curx=obstacles[ii].x;closest=ii;}
+        }
+        obstacles.splice(closest,1);
+      }
       boom(cube.x+cube.w/2,cube.y+cube.h/2,'#facc15');
       tone(440,.06,'triangle',.05);tone(660,.06,'triangle',.05);tone(880,.08,'triangle',.05);
-      // flash everywhere
       for(var i=0;i<20;i++){particles.push({x:cube.x+cube.w/2+(Math.random()-.5)*80,y:cube.y+cube.h/2+(Math.random()-.5)*80,vx:(Math.random()-.5)*200,vy:(Math.random()-.5)*200,life:.5,color:'#facc15',r:4+Math.random()*4});}
       return;
     }
@@ -292,10 +303,11 @@
         powerups.splice(i,1);
       }
     }
-    // update powerup timers
+    // update powerup timers (also invincibility)
     shield=Math.max(0,shield-0.016);
     slow=Math.max(0,slow-0.016);
     doubleScore=Math.max(0,doubleScore-0.016);
+    invincible=Math.max(0,invincible-0.016);
 
     // particles
     for(var i=particles.length-1;i>=0;i--){
@@ -350,6 +362,13 @@
     ctx.translate(cube.x+cube.w/2,cube.y+cube.h/2);
     ctx.rotate(cube.rot*Math.PI/180);
 
+    // shield glow
+    if(shield>0){
+      ctx.beginPath();ctx.arc(cube.x+cube.w/2,cube.y+cube.h/2,28,0,Math.PI*2);
+      ctx.strokeStyle='rgba(250,204,21,'+(0.3+0.3*Math.sin(frame*0.2))+')';
+      ctx.lineWidth=4;ctx.shadowColor='#facc15';ctx.shadowBlur=18;ctx.stroke();
+      ctx.shadowBlur=0;
+    }
     // cube body
     var grad=ctx.createLinearGradient(-cube.w/2,-cube.h/2,cube.w/2,cube.h/2);
     grad.addColorStop(0,'#0ea5e9');
