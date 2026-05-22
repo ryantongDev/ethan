@@ -258,6 +258,7 @@
       for(var i=0;i<20;i++){particles.push({x:cube.x+cube.w/2+(Math.random()-.5)*80,y:cube.y+cube.h/2+(Math.random()-.5)*80,vx:(Math.random()-.5)*200,vy:(Math.random()-.5)*200,life:.5,color:'#facc15',r:4+Math.random()*4});}
       return;
     }
+    squash=0;
     cube.dead=true;
     stopMusic();
     deathSound();
@@ -328,7 +329,7 @@
     cube.y+=cube.vy;
     cube.rot+=cube.grounded?0:(cube.vy<0?5:-5);
     // trail
-    trail.push({x:cube.x,y:cube.y,life:1});
+    if(cube.grounded){trail.push({x:cube.x+(Math.random()-.5)*6,y:cube.y,life:0.7});}else{trail.push({x:cube.x,y:cube.y,life:1});}
     if(trail.length>20)trail.shift();
 
     // ground check
@@ -443,7 +444,7 @@
       var tr=trail[ti];
       tr.life-=0.05;
       if(tr.life<0)continue;
-      ctx.globalAlpha=tr.life*0.2;
+      ctx.globalAlpha=tr.life*(cube.grounded?0.15:0.25);
       ctx.fillStyle=th.cube;
       ctx.fillRect(tr.x,tr.y,cube.w,cube.h);
       ctx.globalAlpha=1;
