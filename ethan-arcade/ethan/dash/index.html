@@ -208,7 +208,7 @@
   function jump(){
     if(over||cube.dead)return;
     if(cube.grounded){
-      cube.vy=cube.jumpForce;
+      cube.vy=cube.jumpForce*(slow>0?1.4:1);
       cube.grounded=false;
       cube.rot=0;
       jumpSound();
@@ -322,8 +322,9 @@
     // speed ramp (slowed when slow powerup active)
     speed=(5+Math.floor(score/8)*0.6)*(slow>0?0.55:1);
 
-    // jump physics
-    cube.vy+=cube.gravity;
+    // jump physics (compensate gravity when slowed so cube still jumps far)
+    var effectiveGravity=cube.gravity*(slow>0?0.5:1);
+    cube.vy+=effectiveGravity;
     cube.y+=cube.vy;
     cube.rot+=cube.grounded?0:(cube.vy<0?5:-5);
     // trail
