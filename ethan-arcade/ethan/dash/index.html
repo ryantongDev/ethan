@@ -331,7 +331,19 @@
     // trail
     if(cube.grounded){trail.push({x:cube.x+(Math.random()-.5)*6,y:cube.y,life:0.7});}else{trail.push({x:cube.x,y:cube.y,life:1});}
     if(trail.length>20)trail.shift();
-
+    // ground squash + running dust
+    if(cube.grounded && !over && !cube.dead){
+      squash=0.06*Math.sin(frame*0.4);
+      if(frame%3===0){
+        particles.push({
+          x:cube.x+Math.random()*8,y:cube.y+cube.h,
+          vx:-speed+Math.random()*15,vy:-Math.random()*15-5,
+          life:.2+Math.random()*.15,color:'rgba(255,255,255,.3)',r:1.5+Math.random()*2
+        });
+      }
+    }else{
+      squash=0;
+    }
     // ground check
     if(cube.y+cube.h>=GROUND){
       cube.y=GROUND-cube.h;
@@ -451,6 +463,8 @@
     }
     ctx.save();
     ctx.translate(cube.x+cube.w/2,cube.y+cube.h/2);
+    // squash/stretch animation when grounded
+    if(squash!==0){ctx.scale(1+squash,1-squash*0.7);}
     ctx.rotate(cube.rot*Math.PI/180);
 
     // shield glow
