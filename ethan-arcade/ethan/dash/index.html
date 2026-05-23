@@ -164,6 +164,7 @@
   var powerups=[];
   var lastMilestone=0;
   var shield=0,slow=0,doubleScore=0;
+  var consecutiveSpikes=0;
 
   var powerupIcons={shield:'🛡️',slow:'🐢',double:'✨'};
   var powerupColors={shield:'#facc15',slow:'#38bdf8',double:'#a855f7'};
@@ -197,7 +198,7 @@
   function reset(){
     cube={x:120,y:GROUND-40,w:40,h:40,vy:0,gravity:0.65,jumpForce:-14.5,grounded:true,dead:false,rot:0,eyeY:0};
     obstacles=[];particles=[];powerups=[];trail=[];
-    shield=0;slow=0;doubleScore=0;invincible=0;
+    shield=0;slow=0;doubleScore=0;invincible=0;consecutiveSpikes=0;
     attempts++;localStorage.setItem('ethan-dash-attempts',String(attempts));
     score=0;over=false;frame=0;speed=5;tick=0;lastMilestone=0;
     document.getElementById('score').textContent='得分：0';
@@ -221,7 +222,9 @@
     var w=36+Math.random()*20;
     var x=W+20;
     var y=top?20:(GROUND-h);
-    obstacles.push({x:x,y:y,w:w,h:h,top:top,passed:false,flash:0,spike:Math.random()<.5});
+    var isSpike=consecutiveSpikes<2 && Math.random()<.5;
+    obstacles.push({x:x,y:y,w:w,h:h,top:top,passed:false,flash:0,spike:isSpike});
+    if(isSpike){consecutiveSpikes++;}else{consecutiveSpikes=0;}
   }
   function spawnChain(){
     // connected blocks (2-4 blocks linked together)
