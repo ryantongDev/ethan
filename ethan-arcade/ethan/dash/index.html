@@ -223,6 +223,18 @@
     var y=top?20:(GROUND-h);
     obstacles.push({x:x,y:y,w:w,h:h,top:top,passed:false,flash:0,spike:Math.random()<.5});
   }
+  function spawnChain(){
+    // connected blocks (2-4 blocks linked together)
+    var top=Math.random()<0.3;
+    var h=36+Math.random()*16;
+    var n=2+Math.floor(Math.random()*3); // 2-4 connected
+    var gap=44+Math.random()*8;
+    var x=W+20;
+    var y=top?20:(GROUND-h);
+    for(var ci=0;ci<n;ci++){
+      obstacles.push({x:x+ci*gap,y:y,w:gap-4,h:h,top:top,passed:false,flash:0,spike:false,chain:true});
+    }
+  }
 
   function boom(x,y,color){
     for(var i=0;i<15;i++){
@@ -356,8 +368,12 @@
     tick++;
     var gap=Math.max(42,72-Math.floor(score/6)*2);
     if(tick%gap===0){
-      spawnObs();
-      if(Math.random()<.35)spawnObs();
+      if(Math.random()<.25 && obstacles.length<6){
+        spawnChain();
+      }else{
+        spawnObs();
+        if(Math.random()<.35)spawnObs();
+      }
       // powerup spawn (small chance)
       if(Math.random()<.08 && powerups.length<3){
         var types=['shield','slow','double'];
