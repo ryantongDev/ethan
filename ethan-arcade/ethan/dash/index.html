@@ -251,16 +251,19 @@
     for(var ci=0;ci<n;ci++){
       obstacles.push({x:x+ci*gap,y:y,w:gap-4,h:h,top:top,passed:false,flash:0,spike:false,chain:true});
     }
-    // add small spikes on top - 50% per block, but 2-block gap enforced
+    // add spikes on chain blocks: 55% per block, 2-block gap
     var spikeH=Math.min(20,h*0.5);
     for(var ci=0;ci<n;ci++){
       if(safeBlocksNeeded>0){
-        // skip placing spike this block
-      }else if(Math.random()<.5){
+        safeBlocksNeeded--;
+        if(safeBlocksNeeded===1 && Math.random()<.5){
+          obstacles.push({x:x+ci*gap+2,y:top?y+h-spikeH:y-spikeH,w:gap-8,h:spikeH,top:false,passed:false,flash:0,spike:true,chain:true});
+          safeBlocksNeeded=2;
+        }
+      }else if(Math.random()<.55){
         obstacles.push({x:x+ci*gap+2,y:top?y+h-spikeH:y-spikeH,w:gap-8,h:spikeH,top:false,passed:false,flash:0,spike:true,chain:true});
         safeBlocksNeeded=2;
       }
-      if(safeBlocksNeeded>0 && ci<n-1)safeBlocksNeeded--;
     }
   }
 
