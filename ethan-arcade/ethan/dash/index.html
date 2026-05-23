@@ -227,23 +227,28 @@
     var w=36+Math.random()*20;
     var x=W+20;
     var y=top?20:(GROUND-h);
-    var r=Math.random();
+    var minGap=gapNeeded();
     var isSpike;
-    if(r<.35){
-      // single spike: spike now, safe block next
-      isSpike=true;
-      consecutiveSpikes=99; // flag: next obstacle forced safe
-    }else if(r<.7){
-      // normal: consecutive rule, high spike chance
-      isSpike=consecutiveSpikes<2 && Math.random()<.75;
-      consecutiveSpikes=isSpike?consecutiveSpikes+1:0;
-    }else{
-      // safe: force non-spike, reset counter
+    if(safeBlocksNeeded>=minGap){
+      // gap countdown still active - must be safe
       isSpike=false;
-      safeBlocksNeeded=gapNeeded();
+      safeBlocksNeeded--;
+    }else if(safeBlocksNeeded>0){
+      // gap just ended (safeBlocksNeeded was 1), can spike this turn
+      isSpike=Math.random()<.5;
+      if(isSpike)safeBlocksNeeded=minGap;
+      else safeBlocksNeeded=0;
+    }else{
+      // no active gap, decide fresh
+      if(Math.random()<.5){
+        isSpike=true;
+        safeBlocksNeeded=minGap;
+      }else{
+        isSpike=false;
+        safeBlocksNeeded=0;
+      }
     }
     obstacles.push({x:x,y:y,w:w,h:h,top:top,passed:false,flash:0,spike:isSpike,death:Math.random()<.12});
-    safeBlocksNeeded=gapNeeded(); // reset after forced safe
   }
   function spawnChain(){
     // connected blocks (2-4 blocks linked together)
