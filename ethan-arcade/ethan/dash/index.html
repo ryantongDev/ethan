@@ -203,7 +203,7 @@
   function reset(){
     cube={x:120,y:GROUND-40,w:40,h:40,vy:0,gravity:0.65,jumpForce:-14.5,grounded:true,dead:false,rot:0,eyeY:0};
     obstacles=[];particles=[];powerups=[];trail=[];
-    shield=0;slow=0;doubleScore=0;invincible=0;consecutiveSpikes=0;
+    shield=0;slow=0;doubleScore=0;invincible=0;safeBlocksNeeded=gapNeeded();nextIsSpike=false;
     attempts++;localStorage.setItem('ethan-dash-attempts',String(attempts));
     score=0;over=false;frame=0;speed=5;tick=0;lastMilestone=0;
     document.getElementById('score').textContent='得分：0';
@@ -223,6 +223,7 @@
 
   function spawnObs(){
     var top=Math.random()<0.42;
+    console.log('spawnObs: ns='+nextIsSpike+' sb='+safeBlocksNeeded+' mg='+minGap);
     var h=36+Math.random()*24;
     var w=36+Math.random()*20;
     var x=W+20;
@@ -234,9 +235,6 @@
       nextIsSpike=false;
       safeBlocksNeeded=minGap;
     }else if(safeBlocksNeeded>=minGap){
-      isSpike=false;
-      safeBlocksNeeded--;
-    }else if(safeBlocksNeeded>0){
       isSpike=false;
       safeBlocksNeeded--;
     }else{
@@ -253,6 +251,7 @@
         safeBlocksNeeded=0;
       }
     }
+    if(!isSpike && safeBlocksNeeded<minGap && safeBlocksNeeded>0)safeBlocksNeeded--;
     obstacles.push({x:x,y:y,w:w,h:h,top:top,passed:false,flash:0,spike:isSpike,death:Math.random()<.12});
   }
 
