@@ -255,20 +255,21 @@
     for(var ci=0;ci<n;ci++){
       obstacles.push({x:x+ci*gap,y:y,w:gap-4,h:h,top:top,passed:false,flash:0,spike:false,chain:true});
     }
-    // add spikes on chain blocks: shorter spike (32% of block height), no visual overlap
+    // chain blocks: 55% spike, own local gap, MINIMUM 2 gap between spikes
     var spikeH=Math.min(18,h*0.32);
+    var cg=0; // local chain gap counter
     for(var ci=0;ci<n;ci++){
-      if(safeBlocksNeeded>0){
-        safeBlocksNeeded--;
-        if(safeBlocksNeeded===1 && Math.random()<.5){
+      if(cg>0){
+        cg--;
+        if(cg===1 && Math.random()<.5){
+          // spike allowed, then restart local gap
           obstacles.push({x:x+ci*gap+2,y:top?y+h-spikeH:y-spikeH,w:gap-8,h:spikeH,top:false,passed:false,flash:0,spike:true,chain:true});
-          safeBlocksNeeded=gapNeeded();
+          cg=Math.max(2,gapNeeded());
         }
       }else if(Math.random()<.55){
         obstacles.push({x:x+ci*gap+2,y:top?y+h-spikeH:y-spikeH,w:gap-8,h:spikeH,top:false,passed:false,flash:0,spike:true,chain:true});
-        safeBlocksNeeded=gapNeeded();
+        cg=Math.max(2,gapNeeded());
       }
-      if(safeBlocksNeeded>0 && safeBlocksNeeded<4)safeBlocksNeeded--;
     }
   }
 
