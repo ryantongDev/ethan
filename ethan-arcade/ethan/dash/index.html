@@ -261,20 +261,16 @@
     for(var ci=0;ci<n;ci++){
       obstacles.push({x:x+ci*gap,y:y,w:gap-4,h:h,top:top,passed:false,flash:0,spike:false,chain:true});
     }
-    // chain blocks: 55% spike, own local gap, MINIMUM 2 gap between spikes
+    // chain blocks: 55% spike, local gap, min 2 blocks since last spike
     var spikeH=Math.min(18,h*0.32);
-    var cg=0; // local chain gap counter
+    var blkSinceSpike=0; // blocks passed since last spike (local to chain)
     for(var ci=0;ci<n;ci++){
-      if(cg>0){
-        cg--;
-        if(cg===1 && Math.random()<.5){
-          // spike allowed, then restart local gap
+      blkSinceSpike++;
+      if(blkSinceSpike>=Math.max(2,gapNeeded())){
+        if(Math.random()<.55){
           obstacles.push({x:x+ci*gap+2,y:top?y+h-spikeH:y-spikeH,w:gap-8,h:spikeH,top:false,passed:false,flash:0,spike:true,chain:true});
-          cg=Math.max(2,gapNeeded());
+          blkSinceSpike=0;
         }
-      }else if(Math.random()<.55){
-        obstacles.push({x:x+ci*gap+2,y:top?y+h-spikeH:y-spikeH,w:gap-8,h:spikeH,top:false,passed:false,flash:0,spike:true,chain:true});
-        cg=Math.max(2,gapNeeded());
       }
     }
   }
