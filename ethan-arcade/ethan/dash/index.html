@@ -165,6 +165,10 @@
   var lastMilestone=0;
   var shield=0,slow=0,doubleScore=0;
   var safeBlocksNeeded=0;
+  function gapNeeded(){
+    // 2 blocks at low speed, up to 4 at high speed
+    return Math.floor(2+speed*0.25);
+  }
 
   var powerupIcons={shield:'🛡️',slow:'🐢',double:'✨'};
   var powerupColors={shield:'#facc15',slow:'#38bdf8',double:'#a855f7'};
@@ -235,10 +239,10 @@
     }else{
       // safe: force non-spike, reset counter
       isSpike=false;
-      safeBlocksNeeded=0;
+      safeBlocksNeeded=gapNeeded();
     }
     obstacles.push({x:x,y:y,w:w,h:h,top:top,passed:false,flash:0,spike:isSpike});
-    if(consecutiveSpikes>10)consecutiveSpikes=0; // reset after forced safe
+    safeBlocksNeeded=gapNeeded(); // reset after forced safe
   }
   function spawnChain(){
     // connected blocks (2-4 blocks linked together)
@@ -258,11 +262,11 @@
         safeBlocksNeeded--;
         if(safeBlocksNeeded===1 && Math.random()<.5){
           obstacles.push({x:x+ci*gap+2,y:top?y+h-spikeH:y-spikeH,w:gap-8,h:spikeH,top:false,passed:false,flash:0,spike:true,chain:true});
-          safeBlocksNeeded=2;
+          safeBlocksNeeded=gapNeeded();
         }
       }else if(Math.random()<.55){
         obstacles.push({x:x+ci*gap+2,y:top?y+h-spikeH:y-spikeH,w:gap-8,h:spikeH,top:false,passed:false,flash:0,spike:true,chain:true});
-        safeBlocksNeeded=2;
+        safeBlocksNeeded=gapNeeded();
       }
       if(safeBlocksNeeded>0 && safeBlocksNeeded<4)safeBlocksNeeded--;
     }
