@@ -354,11 +354,11 @@
     // ground squash + running dust
     if(cube.grounded && !over && !cube.dead){
       squash=0.06*Math.sin(frame*0.4);
-      if(frame%3===0){
+      if(frame%4===0){
         particles.push({
-          x:cube.x+Math.random()*8,y:cube.y+cube.h,
-          vx:-speed+Math.random()*15,vy:-Math.random()*15-5,
-          life:.2+Math.random()*.15,color:'rgba(255,255,255,.3)',r:1.5+Math.random()*2
+          x:cube.x+Math.random()*6,y:cube.y+cube.h-2,
+          vx:-speed*0.6+Math.random()*20,vy:-Math.random()*25-10,
+          life:.35+Math.random()*.3,color:'rgba(255,255,255,.4)',r:2+Math.random()*3
         });
       }
     }else{
