@@ -164,7 +164,7 @@
   var powerups=[];
   var lastMilestone=0;
   var shield=0,slow=0,doubleScore=0;
-  var safeBlocksNeeded=0;
+  var safeBlocksNeeded=0,nextIsSpike=false;
   function gapNeeded(){
     // 2 blocks at low speed, up to 4 at high speed
     return Math.floor(2+speed*0.25);
