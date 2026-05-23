@@ -222,7 +222,7 @@
     var w=36+Math.random()*20;
     var x=W+20;
     var y=top?20:(GROUND-h);
-    var isSpike=consecutiveSpikes<2 && Math.random()<.5;
+    var isSpike=consecutiveSpikes<2 && Math.random()<.7;
     obstacles.push({x:x,y:y,w:w,h:h,top:top,passed:false,flash:0,spike:isSpike});
     if(isSpike){consecutiveSpikes++;}else{consecutiveSpikes=0;}
   }
@@ -241,7 +241,7 @@
     var spikeH=Math.min(20,h*0.5);
     var spikeCount=0;
     for(var ci=0;ci<n;ci++){
-      if(spikeCount<2 && Math.random()<.25){
+      if(spikeCount<2 && Math.random()<.4){
         obstacles.push({x:x+ci*gap+2,y:top?y+h-spikeH:y-spikeH,w:gap-8,h:spikeH,top:false,passed:false,flash:0,spike:true,chain:true});
         spikeCount++;
       }else{
