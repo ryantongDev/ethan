@@ -222,9 +222,23 @@
     var w=36+Math.random()*20;
     var x=W+20;
     var y=top?20:(GROUND-h);
-    var isSpike=consecutiveSpikes<2 && Math.random()<.7;
+    var r=Math.random();
+    var isSpike;
+    if(r<.35){
+      // single spike: spike now, safe block next
+      isSpike=true;
+      consecutiveSpikes=99; // flag: next obstacle forced safe
+    }else if(r<.7){
+      // normal: consecutive rule, high spike chance
+      isSpike=consecutiveSpikes<2 && Math.random()<.75;
+      consecutiveSpikes=isSpike?consecutiveSpikes+1:0;
+    }else{
+      // safe: force non-spike, reset counter
+      isSpike=false;
+      consecutiveSpikes=0;
+    }
     obstacles.push({x:x,y:y,w:w,h:h,top:top,passed:false,flash:0,spike:isSpike});
-    if(isSpike){consecutiveSpikes++;}else{consecutiveSpikes=0;}
+    if(consecutiveSpikes>10)consecutiveSpikes=0; // reset after forced safe
   }
   function spawnChain(){
     // connected blocks (2-4 blocks linked together)
