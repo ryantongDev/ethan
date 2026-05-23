@@ -183,6 +183,7 @@
     {bg1:'#2e0a0a',bg2:'#4a1a1a',ground:'#3a1010',line:'#ef4444',cube:'#ef4444',cubeBorder:'#fca5a5'},
     {bg1:'#1a2e0a',bg2:'#2e4a1a',ground:'#203a10',line:'#84cc16',cube:'#84cc16',cubeBorder:'#bef264'},
   ];
+  var deathBlockColors=['#111','#2a0a2a','#1a0505'];
   var attempts=Number(localStorage.getItem('ethan-dash-attempts')||0);
   var trail=[];
   var cube={
@@ -241,7 +242,7 @@
       isSpike=false;
       safeBlocksNeeded=gapNeeded();
     }
-    obstacles.push({x:x,y:y,w:w,h:h,top:top,passed:false,flash:0,spike:isSpike});
+    obstacles.push({x:x,y:y,w:w,h:h,top:top,passed:false,flash:0,spike:isSpike,death:Math.random()<.12});
     safeBlocksNeeded=gapNeeded(); // reset after forced safe
   }
   function spawnChain(){
@@ -354,6 +355,7 @@
       if(!checkCollision(cx1,cy1,cx2,cy2,ox1,oy1,ox2,oy2))continue;
       if(o.spike){die();return;}
       // block: land on top if falling from above
+      if(o.death && !o.top){die();return;}
       var prevBottom=cube.y-cube.vy+cube.h;
       if(!o.top && prevBottom<=oy1+6 && cube.y+cube.h<oy2){
         cube.y=oy1-cube.h;
@@ -551,8 +553,15 @@
   function drawObs(o){
     var th=getTheme();
     var alpha=o.flash>0?.5+o.flash*.5:1;
-    var blockCol=o.spike?'rgba(248,113,113,'+alpha+')':o.top?'rgba(168,85,247,'+alpha+')':'rgba(168,85,247,'+alpha+')';
-    var borderCol=o.spike?'rgba(255,100,100,.8)':'rgba(192,132,252,.8)';
+    var blockCol;
+    if(o.spike){
+      blockCol='rgba(248,113,113,'+alpha+')';
+    }else if(o.death){
+      blockCol='rgba(17,17,17,'+alpha+')'; // black death block
+    }else{
+      blockCol=o.top?'rgba(168,85,247,'+alpha+')':'rgba(168,85,247,'+alpha+')';
+    }
+    var borderCol=o.spike?'rgba(255,100,100,.8)':o.death?'rgba(80,80,80,.8)':'rgba(192,132,252,.8)';
     ctx.save();
     if(o.top){
       ctx.translate(o.x+o.w/2,o.y);
@@ -576,7 +585,7 @@
         // GD-style face
         ctx.fillStyle='rgba(255,255,255,.4)';
         ctx.font='12px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
-        ctx.fillText(':O',0,o.h/2);
+        if(!o.death){ctx.fillText(':O',0,o.h/2);}
       }
     }else{
       ctx.translate(o.x+o.w/2,o.y+o.h);
@@ -600,7 +609,7 @@
         // GD-style face on blocks
         ctx.fillStyle='rgba(255,255,255,.4)';
         ctx.font='12px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
-        ctx.fillText(':D',0,-o.h/2);
+        if(!o.death){ctx.fillText(':D',0,-o.h/2);}
       }
     }
     ctx.restore();
