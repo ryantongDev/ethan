@@ -234,6 +234,14 @@
     for(var ci=0;ci<n;ci++){
       obstacles.push({x:x+ci*gap,y:y,w:gap-4,h:h,top:top,passed:false,flash:0,spike:false,chain:true});
     }
+    // add small spikes on top of some blocks (25% chance per block)
+    // spike sits right on the platform - shorter and wider
+    var spikeH=Math.min(20,h*0.5);
+    for(var ci=0;ci<n;ci++){
+      if(Math.random()<.25){
+        obstacles.push({x:x+ci*gap+2,y:top?y+h-spikeH:y-spikeH,w:gap-8,h:spikeH,top:false,passed:false,flash:0,spike:true,chain:true});
+      }
+    }
   }
 
   function boom(x,y,color){
