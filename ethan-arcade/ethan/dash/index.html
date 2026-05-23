@@ -164,7 +164,7 @@
   var powerups=[];
   var lastMilestone=0;
   var shield=0,slow=0,doubleScore=0;
-  var consecutiveSpikes=0;
+  var safeBlocksNeeded=0;
 
   var powerupIcons={shield:'🛡️',slow:'🐢',double:'✨'};
   var powerupColors={shield:'#facc15',slow:'#38bdf8',double:'#a855f7'};
@@ -235,7 +235,7 @@
     }else{
       // safe: force non-spike, reset counter
       isSpike=false;
-      consecutiveSpikes=0;
+      safeBlocksNeeded=0;
     }
     obstacles.push({x:x,y:y,w:w,h:h,top:top,passed:false,flash:0,spike:isSpike});
     if(consecutiveSpikes>10)consecutiveSpikes=0; // reset after forced safe
@@ -251,16 +251,16 @@
     for(var ci=0;ci<n;ci++){
       obstacles.push({x:x+ci*gap,y:y,w:gap-4,h:h,top:top,passed:false,flash:0,spike:false,chain:true});
     }
-    // add small spikes on top of some blocks (25% chance per block, max 2 consecutive spikes)
+    // add small spikes on top - 50% per block, but 2-block gap enforced
     var spikeH=Math.min(20,h*0.5);
-    var spikeCount=0;
     for(var ci=0;ci<n;ci++){
-      if(spikeCount<2 && Math.random()<.4){
+      if(safeBlocksNeeded>0){
+        // skip placing spike this block
+      }else if(Math.random()<.5){
         obstacles.push({x:x+ci*gap+2,y:top?y+h-spikeH:y-spikeH,w:gap-8,h:spikeH,top:false,passed:false,flash:0,spike:true,chain:true});
-        spikeCount++;
-      }else{
-        spikeCount=0; // reset after a non-spike block
+        safeBlocksNeeded=2;
       }
+      if(safeBlocksNeeded>0 && ci<n-1)safeBlocksNeeded--;
     }
   }
 
