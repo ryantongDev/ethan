@@ -391,9 +391,9 @@
       trail.push({x:cube.x+(Math.random()-.5)*6,y:cube.y,life:0.7});
     }else{
       // airborne: trail also flies backward relative to movement
-      trail.push({x:cube.x-speed*2+(Math.random()-.5)*8,y:cube.y+(Math.random()-.5)*6,life:0.5});
+      trail.push({x:cube.x-speed*5+(Math.random()-.5)*12,y:cube.y+(Math.random()-.5)*10,life:0.6});
     }
-    if(trail.length>20)trail.shift();
+    if(trail.length>28)trail.shift();
     // ground squash + running dust
     if(cube.grounded && !over && !cube.dead){
       squash=0.06*Math.sin(frame*0.4);
