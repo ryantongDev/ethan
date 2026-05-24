@@ -391,7 +391,7 @@
     // trail
     if(!cube.grounded && !cube.dead && !over){
       // record arc: offset trail backward so it shows cube's path from behind
-      trail.push({x:cube.x-speed*2,y:cube.y,life:1});
+      trail.push({x:cube.x,y:cube.y,life:1});
     }
     if(trail.length>24)trail.shift();
     // ground squash + running dust
@@ -534,7 +534,7 @@
       }
       ctx.globalAlpha=1;
     }
-    for(var ti=0;ti<trail.length;ti++){if(trail[ti].life>0)trail[ti].life-=0.04;}
+    // fade trail in update (once per frame only)
     ctx.save();
     ctx.translate(cube.x+cube.w/2,cube.y+cube.h/2);
     // squash/stretch animation when grounded
