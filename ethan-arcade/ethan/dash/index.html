@@ -202,7 +202,7 @@
 
   function reset(){
     cube={x:120,y:GROUND-40,w:40,h:40,vy:0,gravity:0.65,jumpForce:-14.5,grounded:true,dead:false,rot:0,eyeY:0};
-    obstacles=[];particles=[];powerups=[];trail=[];jumpTime=0;jumpArcX=0;
+    obstacles=[];particles=[];powerups=[];trail=[];
     shield=0;slow=0;doubleScore=0;invincible=0;safeBlocksNeeded=gapNeeded();nextIsSpike=false;
     attempts++;localStorage.setItem('ethan-dash-attempts',String(attempts));
     score=0;over=false;frame=0;speed=5;tick=0;lastMilestone=0;
@@ -388,16 +388,14 @@
     cube.vy+=effectiveGravity;
     cube.y+=cube.vy;
     cube.rot+=cube.grounded?0:(cube.vy<0?5:-5);
-    // trail: simulate arc by advancing x as cube flies through parabola
+    // trail: record jump y positions, arc is drawn in drawCube with x offset
     if(!cube.grounded && !cube.dead && !over){
-      jumpTime++;
-      // simulate forward speed: cube moves ~2-4px per frame in the air
-      jumpArcX=cube.x-jumpTime*(speed*0.5);
-      trail.push({x:jumpArcX,y:cube.y,life:1});
+
+      trail.push({y:cube.y,life:1});
     }
-    if(trail.length>32)trail.shift();
+    if(trail.length>28)trail.shift();
     // reset on ground
-    if(cube.grounded && jumpTime>0){jumpTime=0;jumpArcX=0;}
+    
     // ground squash + running dust
     if(cube.grounded && !over && !cube.dead){
       squash=0.06*Math.sin(frame*0.4);
