@@ -157,7 +157,13 @@
   var best=Number(localStorage.getItem('ethan-dash-best')||0);
   var over=false;
   var frame=0;
-  var speed=5;
+  var speed=5,difficulty=(localStorage.getItem('ethan-dash-diff')||'normal');
+  function diffMult(prop){
+    var cfg={easy:{spdBase:4,spdStep:0.35,gapMin:50,gapBase:85,gapDiv:7,spikePair:.4,spikeSingle:.05,chainBlk:25,chainSpk:.3,deathPct:.04,pwRate:.2,spdInc:0.4},
+       normal:{spdBase:5,spdStep:0.6,gapMin:42,gapBase:72,gapDiv:6,spikePair:.6,spikeSingle:.1,chainBlk:40,chainSpk:.55,deathPct:.12,pwRate:.15,spdInc:0.6},
+        hard:{spdBase:6,spdStep:0.7,gapMin:35,gapBase:62,gapDiv:5,spikePair:.7,spikeSingle:.15,chainBlk:50,chainSpk:.65,deathPct:.18,pwRate:.1,spdInc:0.8}};
+    return cfg[difficulty][prop];
+  }
   var tick=0;
   var obstacles=[];
   var particles=[];
@@ -241,11 +247,11 @@
       safeBlocksNeeded--;
     }else if(cube.grounded && jumpTime>0){jumpTime=0;}else{
       var r=Math.random();
-      if(r<.6){
+      if(r<diffMult('spikePair')){
         isSpike=true;
         nextIsSpike=true;
         safeBlocksNeeded=minGap;
-      }else if(r<.7){
+      }else if(r<diffMult('spikePair')+diffMult('spikeSingle')){
         isSpike=true;
         safeBlocksNeeded=minGap;
       }else if(cube.grounded && jumpTime>0){jumpTime=0;}else{
@@ -254,7 +260,7 @@
       }
     }
     if(!isSpike && safeBlocksNeeded<minGap && safeBlocksNeeded>0)safeBlocksNeeded--;
-    obstacles.push({x:x,y:y,w:w,h:h,top:top,passed:false,flash:0,spike:isSpike,death:Math.random()<.12});
+    obstacles.push({x:x,y:y,w:w,h:h,top:top,passed:false,flash:0,spike:isSpike,death:Math.random()<diffMult('deathPct')});
   }
 
 
@@ -275,7 +281,7 @@
     for(var ci=0;ci<n;ci++){
       blkSinceSpike++;
       if(blkSinceSpike>=Math.max(2,gapNeeded())){
-        if(Math.random()<.55){
+        if(Math.random()<diffMult('chainSpk')){
           obstacles.push({x:x+ci*gap+2,y:top?y+h-spikeH:y-spikeH,w:gap-8,h:spikeH,top:false,passed:false,flash:0,spike:true,chain:true});
           blkSinceSpike=0;
         }
@@ -381,7 +387,7 @@
     frame++;
 
     // speed ramp (slowed when slow powerup active)
-    speed=(5+Math.floor(score/8)*0.6)*(slow>0?0.55:1);
+    speed=(diffMult('spdBase')+Math.floor(score/diffMult('spdInc'))*diffMult('spdStep'))*(slow>0?0.55:1);
 
     // jump physics (compensate gravity when slowed so cube still jumps far)
     var effectiveGravity=cube.gravity;
@@ -418,16 +424,16 @@
 
     // spawn obstacles
     tick++;
-    var gap=Math.max(42,72-Math.floor(score/6)*2);
+    var gap=Math.max(diffMult('gapMin'),diffMult('gapBase')-Math.floor(score/diffMult('gapDiv'))*2);
     if(tick%gap===0){
-      if(Math.random()<.4 && obstacles.length<6){
+      if(Math.random()<diffMult('chainBlk')/100 && obstacles.length<6){
         spawnChain();
       }else if(cube.grounded && jumpTime>0){jumpTime=0;}else{
         spawnObs();
         if(Math.random()<.35)spawnObs();
       }
       // powerup spawn (small chance)
-      if(Math.random()<.15 && powerups.length<3){
+      if(Math.random()<diffMult('pwRate') && powerups.length<3){
         var types=['shield','slow','double'];
         var ptype=types[Math.floor(Math.random()*3)];
         powerups.push({x:W+20, y:GROUND-190+Math.random()*130, type:ptype, r:22});
