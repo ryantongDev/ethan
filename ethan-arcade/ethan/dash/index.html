@@ -193,7 +193,7 @@
     h:40,
     vy:0,
     gravity:0.65,
-    jumpForce:-14.5,
+    jumpForce:-16.5,
     grounded:true,
     dead:false,
     rot:0,
@@ -201,7 +201,7 @@
   };
 
   function reset(){
-    cube={x:120,y:GROUND-40,w:40,h:40,vy:0,gravity:0.65,jumpForce:-14.5,grounded:true,dead:false,rot:0,eyeY:0};
+    cube={x:120,y:GROUND-40,w:40,h:40,vy:0,gravity:0.65,jumpForce:-16.5,grounded:true,dead:false,rot:0,eyeY:0};
     obstacles=[];particles=[];powerups=[];trail=[];jumpTime=0;
     shield=0;slow=0;doubleScore=0;invincible=0;safeBlocksNeeded=gapNeeded();nextIsSpike=false;
     attempts++;localStorage.setItem('ethan-dash-attempts',String(attempts));
