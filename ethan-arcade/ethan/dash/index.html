@@ -392,10 +392,10 @@
     if(!cube.grounded && !cube.dead && !over){
       jumpTime++;
       // simulate forward speed: cube moves ~2-4px per frame in the air
-      jumpArcX=cube.x+jumpTime*(speed*0.5);
+      jumpArcX=cube.x-jumpTime*(speed*0.5);
       trail.push({x:jumpArcX,y:cube.y,life:1});
     }
-    if(trail.length>28)trail.shift();
+    if(trail.length>32)trail.shift();
     // reset on ground
     if(cube.grounded && jumpTime>0){jumpTime=0;jumpArcX=0;}
     // ground squash + running dust
