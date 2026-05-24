@@ -763,6 +763,16 @@
   },{passive:false});
   document.getElementById('restartBtn').addEventListener('click',reset);
   document.getElementById('homeBtn').addEventListener('click',function(){location.href='/ethan/';});
+  // difficulty buttons
+  document.querySelectorAll('.diffBtn').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.querySelectorAll('.diffBtn').forEach(function(x){x.style.opacity='.5';});
+      this.style.opacity='1';
+      difficulty=this.dataset.diff;
+      localStorage.setItem('ethan-dash-diff',difficulty);
+      reset();
+    });
+  });
 
   document.getElementById('best').textContent='最高：'+best;
   reset();
