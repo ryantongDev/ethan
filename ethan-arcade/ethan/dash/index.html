@@ -518,35 +518,22 @@
 
   function drawCube(){
     var th=getTheme();
-    // curved jump arc trail: connected curve showing arc path
-    if(trail.length>=2){
-      // draw connected line from oldest to newest
+    // jump arc trail: circles following actual trajectory (not vertical)
+    var alive=trail.filter(function(t){return t.life>0;});
+    if(alive.length>=2){
       ctx.globalAlpha=0.3;
-      ctx.strokeStyle=th.cube;
-      ctx.lineWidth=cube.h*0.25;
-      ctx.lineCap='round';
-      ctx.beginPath();
-      ctx.moveTo(trail[0].x+cube.w/2,trail[0].y+cube.h/2);
-      for(var ti=1;ti<trail.length;ti++){
-        var al=trail[ti];
-        al.life-=0.04;
-        ctx.globalAlpha=0.05+al.life*0.3;
-        ctx.lineTo(al.x+cube.w/2,al.y+cube.h/2);
-      }
-      ctx.stroke();
-      // also draw small circles at each point
-      ctx.globalAlpha=0.4;
-      for(var ti=0;ti<trail.length;ti++){
-        var al=trail[ti];
-        if(al.life<=0)continue;
-        var r=cube.h*(0.08+al.life*0.35);
+      ctx.fillStyle=th.cube;
+      // draw trail points as connected gradient arc
+      for(var ti=0;ti<alive.length;ti++){
+        var al=alive[ti];
+        al.life-=0.03;
+        var r=cube.h*(0.1+al.life*0.4);
         ctx.beginPath();
         ctx.arc(al.x+cube.w/2,al.y+cube.h/2,r,0,Math.PI*2);
         ctx.fill();
       }
       ctx.globalAlpha=1;
     }
-    // grounded fade out
     for(var ti=0;ti<trail.length;ti++){if(trail[ti].life>0)trail[ti].life-=0.04;}
     ctx.save();
     ctx.translate(cube.x+cube.w/2,cube.y+cube.h/2);
