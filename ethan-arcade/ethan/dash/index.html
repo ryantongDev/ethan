@@ -310,7 +310,7 @@
   }
   function spawnFloating(){
     // parkour-style floating blocks at varying heights
-    var n=3+Math.floor(Math.random()*3); // 3-5 floating blocks
+    var n=4+Math.floor(Math.random()*4); // 4-7 floating blocks
     var firstX=W+20;
     var blkGap=50+Math.random()*30; // gap between blocks
     var blkW=60+Math.random()*20; // block width
@@ -462,7 +462,7 @@
     if(tick%gap===0){
       if(Math.random()<diffMult('chainBlk') && obstacles.length<6){
         spawnChain();
-      }else if(Math.random()<.35 && obstacles.length<5){
+      }else if(Math.random()<.55 && obstacles.length<5){
         spawnFloating();
       }else if(cube.grounded && jumpTime>0){jumpTime=0;}else{
         spawnObs();
