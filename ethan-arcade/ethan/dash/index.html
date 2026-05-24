@@ -391,7 +391,7 @@
     // trail: record jump positions with fixed x offset
     if(!cube.grounded && !cube.dead && !over){
       jumpTime++;
-      trail.push({x:cube.x+jumpTime*speed*0.5,y:cube.y,life:1});
+      trail.push({x:cube.x+(jumpTime-28)*speed*0.5,y:cube.y,life:1});
     }
     if(trail.length>28)trail.shift();
     
