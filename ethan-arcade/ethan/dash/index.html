@@ -308,6 +308,23 @@
       });
     }
   }
+  function spawnFloating(){
+    // parkour-style floating blocks at varying heights
+    var n=3+Math.floor(Math.random()*3); // 3-5 floating blocks
+    var firstX=W+20;
+    var blkGap=50+Math.random()*30; // gap between blocks
+    var blkW=60+Math.random()*20; // block width
+    var blkH=24+Math.random()*12; // block height
+    for(var fi=0;fi<n;fi++){
+      var bx=firstX+fi*(blkW+blkGap);
+      // random height from 30% to 70% of screen (mid-air)
+      var heightPct=.45+Math.random()*.35;
+      var by=GROUND*heightPct;
+      // add some variation so the blocks aren't all at same height
+      if(fi>0)by+=(Math.random()-.5)*50;
+      obstacles.push({x:bx,y:by,w:blkW,h:blkH,top:false,passed:false,flash:0,spike:false,float:true});
+    }
+  }
 
   var invincible=0;
   function die(){
@@ -443,6 +460,8 @@
     if(tick%gap===0){
       if(Math.random()<diffMult('chainBlk') && obstacles.length<6){
         spawnChain();
+      }else if(Math.random()<.2 && obstacles.length<6){
+        spawnFloating();
       }else if(cube.grounded && jumpTime>0){jumpTime=0;}else{
         spawnObs();
         if(Math.random()<.35)spawnObs();
