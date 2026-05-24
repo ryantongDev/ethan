@@ -391,6 +391,8 @@
       var cx1=cube.x+4,cy1=cube.y+4,cx2=cube.x+cube.w-4,cy2=cube.y+cube.h-4;
       var ox1=o.x,oy1=o.y,ox2=o.x+o.w,oy2=o.y+o.h;
       if(!checkCollision(cx1,cy1,cx2,cy2,ox1,oy1,ox2,oy2))continue;
+      // floating block: one-way platform (pass through from below)
+      if(o.float && cube.vy<0)continue;
       // mystery block: gives random powerup
       if(o.mystery){
         var ptypes=['shield','slow','double'];
