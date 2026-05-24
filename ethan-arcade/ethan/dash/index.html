@@ -427,7 +427,7 @@
         if(Math.random()<.35)spawnObs();
       }
       // powerup spawn (small chance)
-      if(Math.random()<.08 && powerups.length<3){
+      if(Math.random()<.15 && powerups.length<3){
         var types=['shield','slow','double'];
         var ptype=types[Math.floor(Math.random()*3)];
         powerups.push({x:W+20, y:GROUND-190+Math.random()*130, type:ptype, r:22});
