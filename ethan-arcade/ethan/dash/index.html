@@ -266,7 +266,7 @@
       }
     }
     if(!isSpike && safeBlocksNeeded<minGap && safeBlocksNeeded>0)safeBlocksNeeded--;
-    obstacles.push({x:x,y:y,w:w,h:h,top:top,passed:false,flash:0,spike:isSpike,death:Math.random()<diffMult('deathPct')});
+    obstacles.push({x:x,y:y,w:w,h:h,top:top,passed:false,flash:0,spike:isSpike,death:Math.random()<diffMult('deathPct'),mystery:!isSpike && Math.random()<.08});
   }
 
 
@@ -374,6 +374,15 @@
       var cx1=cube.x+4,cy1=cube.y+4,cx2=cube.x+cube.w-4,cy2=cube.y+cube.h-4;
       var ox1=o.x,oy1=o.y,ox2=o.x+o.w,oy2=o.y+o.h;
       if(!checkCollision(cx1,cy1,cx2,cy2,ox1,oy1,ox2,oy2))continue;
+      // mystery block: gives random powerup
+      if(o.mystery){
+        var ptypes=['shield','slow','double'];
+        var ptype=ptypes[Math.floor(Math.random()*3)];
+        if(ptype==='shield')shield=8;
+        if(ptype==='slow')slow=5;
+        if(ptype==='double')doubleScore=8;
+        powerupSound();obstacles.splice(i,1);i--;continue;
+      }
       if(o.spike){die();return;}
       // block: land on top if falling from above
       if(o.death && !o.top){die();return;}
