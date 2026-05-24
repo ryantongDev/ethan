@@ -388,10 +388,10 @@
     cube.vy+=effectiveGravity;
     cube.y+=cube.vy;
     cube.rot+=cube.grounded?0:(cube.vy<0?5:-5);
-    // trail: record jump positions with fixed x offset
+    // trail: record relative dx + y positions, absolute x computed at draw
     if(!cube.grounded && !cube.dead && !over){
       jumpTime++;
-      trail.push({x:cube.x+(jumpTime-28)*speed*0.2+20,y:cube.y,life:1});
+      trail.push({dx:jumpTime*speed*0.2,y:cube.y,life:1});
     }
     if(trail.length>28)trail.shift();
     
@@ -519,40 +519,50 @@
 
   function drawCube(){
     var th=getTheme();
-    // jump arc trail: fixed x positions from recording
-    var alive=trail.filter(function(t){return t.life>0;});
-    if(alive.length>=3){
-      var dw=cube.w/2,dh=cube.h/2;
+    // jump arc trail: anchor at cube center, trail extends behind
+    // compute maxDx reference from all alive points for stable positioning
+    var maxDx=0,totalAlive=0;
+    for(var ti=0;ti<trail.length;ti++){
+      var tr=trail[ti];
+      if(tr.life>0){totalAlive++;if(tr.dx>maxDx)maxDx=tr.dx;}
+    }
+    if(totalAlive>=3 && maxDx>0){
+      var anchorX=cube.x+cube.w/2; // cube center - trail anchor
+      var dy=cube.h/2;
       ctx.lineCap='round';ctx.lineJoin='round';
-      // two-pass gradient curve
+      // two-pass gradient curve: anchored at cube center, extends behind
       for(var pass=0;pass<2;pass++){
         ctx.globalAlpha=pass===0?0.12:0.22;
         ctx.strokeStyle=th.cube;
         ctx.lineWidth=pass===0?cube.h*0.5:cube.h*0.25;
         ctx.beginPath();
-        for(var ti=0;ti<alive.length;ti++){
-          var al=alive[ti];
-          al.life-=0.02;
-          if(ti===0)ctx.moveTo(al.x+dw,al.y+dh);
-          else ctx.lineTo(al.x+dw,al.y+dh);
+        var started=false;
+        for(var ti=0;ti<trail.length;ti++){
+          var tr=trail[ti];
+          if(tr.life<=0)continue;
+          tr.life-=0.015;
+          var tx=anchorX-(maxDx-tr.dx); // behind cube: smaller dx = further left
+          if(!started){ctx.moveTo(tx,tr.y+dy);started=true;}
+          else ctx.lineTo(tx,tr.y+dy);
         }
         ctx.stroke();
       }
-      // dots
+      // gradient dots along the trail
       ctx.fillStyle=th.cube;
-      for(var ti=0;ti<alive.length;ti++){
-        var al=alive[ti];
-        if(al.life<=0)continue;
-        var r=cube.h*(0.06+al.life*0.35);
-        ctx.globalAlpha=0.05+al.life*0.4;
+      for(var ti=0;ti<trail.length;ti++){
+        var tr=trail[ti];
+        if(tr.life<=0)continue;
+        var tx=anchorX-(maxDx-tr.dx);
+        var r=cube.h*(0.06+tr.life*0.35);
+        ctx.globalAlpha=0.05+tr.life*0.4;
         ctx.beginPath();
-        ctx.arc(al.x+dw,al.y+dh,r,0,Math.PI*2);
+        ctx.arc(tx,tr.y+dy,r,0,Math.PI*2);
         ctx.fill();
       }
       ctx.globalAlpha=1;
     }
     // fade trail once per frame
-    for(var ti=0;ti<trail.length;ti++){if(trail[ti].life>0)trail[ti].life-=0.02;}
+    for(var ti=0;ti<trail.length;ti++){if(trail[ti].life>0)trail[ti].life-=0.015;}
     ctx.save();
     ctx.translate(cube.x+cube.w/2,cube.y+cube.h/2);
     // squash/stretch animation when grounded
