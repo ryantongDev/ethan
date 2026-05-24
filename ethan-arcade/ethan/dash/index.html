@@ -214,6 +214,8 @@
   function jump(){
     if(over||cube.dead)return;
     if(cube.grounded){
+      // fade out trail when grounded
+      for(var ti=0;ti<trail.length;ti++)trail[ti].life-=0.08;
       cube.vy=cube.jumpForce*(slow>0?1.4:1);
       cube.grounded=false;
       cube.rot=0;
@@ -387,13 +389,11 @@
     cube.y+=cube.vy;
     cube.rot+=cube.grounded?0:(cube.vy<0?5:-5);
     // trail
-    if(cube.grounded){
-      trail.push({x:cube.x+(Math.random()-.5)*6,y:cube.y,life:0.7});
-    }else{
-      // airborne: trail also flies backward relative to movement
-      trail.push({x:cube.x-speed*5+(Math.random()-.5)*12,y:cube.y+(Math.random()-.5)*10,life:0.6});
+    if(!cube.grounded && !cube.dead && !over){
+      // only add trail when airborne - record y position for arc
+      trail.push({x:cube.x,y:cube.y,life:1});
     }
-    if(trail.length>28)trail.shift();
+    if(trail.length>18)trail.shift();
     // ground squash + running dust
     if(cube.grounded && !over && !cube.dead){
       squash=0.06*Math.sin(frame*0.4);
@@ -518,22 +518,20 @@
 
   function drawCube(){
     var th=getTheme();
-    // connected trail bar behind cube
+    // curved jump arc trail: only when airborne
     var alive=trail.filter(function(t){return t.life>0;});
     if(alive.length>=2){
-      // find first and last alive trail points
-      var oldest=alive[0], newest=alive[alive.length-1];
-      var barH=cube.h*0.6;
-      var barY=cube.y+(cube.h-barH)/2;
-      ctx.globalAlpha=0.35;
+      ctx.globalAlpha=0.25;
       ctx.fillStyle=th.cube;
-      // draw bar from oldest trail position to behind cube
-      ctx.fillRect(oldest.x-4,barY,newest.x-oldest.x+cube.w+8,barH);
+      for(var ti=0;ti<alive.length;ti++){
+        var al=alive[ti];
+        var r=cube.h*(0.1+al.life*0.5);
+        ctx.beginPath();
+        ctx.arc(al.x+cube.w/2,al.y+cube.h/2,r,0,Math.PI*2);
+        ctx.fill();
+        al.life-=0.04;
+      }
       ctx.globalAlpha=1;
-    }
-    for(var ti=0;ti<trail.length;ti++){
-      trail[ti].life-=0.04;
-      if(trail[ti].life<0)continue;
     }
     ctx.save();
     ctx.translate(cube.x+cube.w/2,cube.y+cube.h/2);
