@@ -165,9 +165,9 @@
   var frame=0;
   var speed=5,difficulty=(localStorage.getItem('ethan-dash-diff')||'normal');
   function diffMult(prop){
-    var cfg={easy:{spdBase:4,spdStep:0.35,gapMin:50,gapBase:85,gapDiv:7,spikePair:.4,spikeSingle:.05,chainBlk:25,chainSpk:.3,deathPct:.04,pwRate:.2,spdInc:0.4},
-       normal:{spdBase:5,spdStep:0.6,gapMin:42,gapBase:72,gapDiv:6,spikePair:.6,spikeSingle:.1,chainBlk:40,chainSpk:.55,deathPct:.12,pwRate:.15,spdInc:0.6},
-        hard:{spdBase:6,spdStep:0.7,gapMin:35,gapBase:62,gapDiv:5,spikePair:.7,spikeSingle:.15,chainBlk:50,chainSpk:.65,deathPct:.18,pwRate:.1,spdInc:0.8}};
+    var cfg={easy:{spdBase:3.5,spdStep:0.2,gapMin:65,gapBase:100,gapDiv:10,spikePair:.25,spikeSingle:.02,chainBlk:.2,chainSpk:.15,deathPct:.01,pwRate:.25,spdInc:12},
+       normal:{spdBase:5,spdStep:0.6,gapMin:42,gapBase:72,gapDiv:6,spikePair:.6,spikeSingle:.1,chainBlk:.4,chainSpk:.55,deathPct:.12,pwRate:.15,spdInc:8},
+        hard:{spdBase:6.5,spdStep:0.8,gapMin:32,gapBase:65,gapDiv:5,spikePair:.75,spikeSingle:.15,chainBlk:.5,chainSpk:.65,deathPct:.2,pwRate:.08,spdInc:5}};
     return cfg[difficulty][prop];
   }
   var tick=0;
@@ -432,7 +432,7 @@
     tick++;
     var gap=Math.max(diffMult('gapMin'),diffMult('gapBase')-Math.floor(score/diffMult('gapDiv'))*2);
     if(tick%gap===0){
-      if(Math.random()<diffMult('chainBlk')/100 && obstacles.length<6){
+      if(Math.random()<diffMult('chainBlk') && obstacles.length<6){
         spawnChain();
       }else if(cube.grounded && jumpTime>0){jumpTime=0;}else{
         spawnObs();
