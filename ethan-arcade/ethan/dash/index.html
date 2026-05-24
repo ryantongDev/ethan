@@ -266,7 +266,7 @@
       }
     }
     if(!isSpike && safeBlocksNeeded<minGap && safeBlocksNeeded>0)safeBlocksNeeded--;
-    obstacles.push({x:x,y:y,w:w,h:h,top:top,passed:false,flash:0,spike:isSpike,death:Math.random()<diffMult('deathPct'),mystery:!isSpike && Math.random()<.08});
+    obstacles.push({x:x,y:y,w:w,h:h,top:top,passed:false,flash:0,spike:isSpike,death:Math.random()<diffMult('deathPct'),mystery:!isSpike && Math.random()<.15});
   }
 
 
