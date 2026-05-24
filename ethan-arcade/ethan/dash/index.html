@@ -460,7 +460,7 @@
     if(tick%gap===0){
       if(Math.random()<diffMult('chainBlk') && obstacles.length<6){
         spawnChain();
-      }else if(Math.random()<.2 && obstacles.length<6){
+      }else if(Math.random()<.35 && obstacles.length<5){
         spawnFloating();
       }else if(cube.grounded && jumpTime>0){jumpTime=0;}else{
         spawnObs();
