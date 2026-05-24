@@ -141,7 +141,7 @@
       buildSong();
       if(musicTimer)clearTimeout(musicTimer);
       musicLoop();
-    }else{
+    }else if(cube.grounded && jumpTime>0){jumpTime=0;}else{
       if(musicTimer){clearTimeout(musicTimer);musicTimer=null;}
     }
   }
@@ -202,7 +202,7 @@
 
   function reset(){
     cube={x:120,y:GROUND-40,w:40,h:40,vy:0,gravity:0.65,jumpForce:-14.5,grounded:true,dead:false,rot:0,eyeY:0};
-    obstacles=[];particles=[];powerups=[];trail=[];
+    obstacles=[];particles=[];powerups=[];trail=[];jumpTime=0;
     shield=0;slow=0;doubleScore=0;invincible=0;safeBlocksNeeded=gapNeeded();nextIsSpike=false;
     attempts++;localStorage.setItem('ethan-dash-attempts',String(attempts));
     score=0;over=false;frame=0;speed=5;tick=0;lastMilestone=0;
@@ -239,7 +239,7 @@
     }else if(safeBlocksNeeded>=minGap){
       isSpike=false;
       safeBlocksNeeded--;
-    }else{
+    }else if(cube.grounded && jumpTime>0){jumpTime=0;}else{
       var r=Math.random();
       if(r<.6){
         isSpike=true;
@@ -248,7 +248,7 @@
       }else if(r<.7){
         isSpike=true;
         safeBlocksNeeded=minGap;
-      }else{
+      }else if(cube.grounded && jumpTime>0){jumpTime=0;}else{
         isSpike=false;
         safeBlocksNeeded=0;
       }
@@ -370,7 +370,7 @@
         cube.y=oy1-cube.h;
         cube.vy=0;
         cube.grounded=true;
-      }else{
+      }else if(cube.grounded && jumpTime>0){jumpTime=0;}else{
         die();return;
       }
     }
@@ -388,13 +388,12 @@
     cube.vy+=effectiveGravity;
     cube.y+=cube.vy;
     cube.rot+=cube.grounded?0:(cube.vy<0?5:-5);
-    // trail: record jump y positions, arc is drawn in drawCube with x offset
+    // trail: record jump positions with fixed x offset
     if(!cube.grounded && !cube.dead && !over){
-
-      trail.push({y:cube.y,life:1});
+      jumpTime++;
+      trail.push({x:cube.x-jumpTime*speed*0.5,y:cube.y,life:1});
     }
     if(trail.length>28)trail.shift();
-    // reset on ground
     
     // ground squash + running dust
     if(cube.grounded && !over && !cube.dead){
@@ -406,7 +405,7 @@
           life:.4+Math.random()*.35,color:'rgba(255,255,255,.35)',r:2+Math.random()*3
         });
       }
-    }else{
+    }else if(cube.grounded && jumpTime>0){jumpTime=0;}else{
       squash=0;
     }
     // ground check
@@ -423,7 +422,7 @@
     if(tick%gap===0){
       if(Math.random()<.4 && obstacles.length<6){
         spawnChain();
-      }else{
+      }else if(cube.grounded && jumpTime>0){jumpTime=0;}else{
         spawnObs();
         if(Math.random()<.35)spawnObs();
       }
@@ -520,10 +519,10 @@
 
   function drawCube(){
     var th=getTheme();
-    // jump arc trail: curve behind cube
+    // jump arc trail: fixed x positions from recording
     var alive=trail.filter(function(t){return t.life>0;});
     if(alive.length>=3){
-      var cx=cube.x,dw=cube.w/2,dh=cube.h/2;
+      var dw=cube.w/2,dh=cube.h/2;
       ctx.lineCap='round';ctx.lineJoin='round';
       // two-pass gradient curve
       for(var pass=0;pass<2;pass++){
@@ -533,23 +532,21 @@
         ctx.beginPath();
         for(var ti=0;ti<alive.length;ti++){
           var al=alive[ti];
-          var ddx=(alive.length-1-ti)*(speed*0.4);
-          if(ti===0)ctx.moveTo(cx+ddx+dw,al.y+dh);
-          else ctx.lineTo(cx+ddx+dw,al.y+dh);
           al.life-=0.02;
+          if(ti===0)ctx.moveTo(al.x+dw,al.y+dh);
+          else ctx.lineTo(al.x+dw,al.y+dh);
         }
         ctx.stroke();
       }
-      // dots at each trail point
+      // dots
       ctx.fillStyle=th.cube;
       for(var ti=0;ti<alive.length;ti++){
         var al=alive[ti];
         if(al.life<=0)continue;
-        var ddx=(alive.length-1-ti)*(speed*0.4);
         var r=cube.h*(0.06+al.life*0.35);
         ctx.globalAlpha=0.05+al.life*0.4;
         ctx.beginPath();
-        ctx.arc(cx+ddx+dw,al.y+dh,r,0,Math.PI*2);
+        ctx.arc(al.x+dw,al.y+dh,r,0,Math.PI*2);
         ctx.fill();
       }
       ctx.globalAlpha=1;
@@ -598,7 +595,7 @@
       blockCol='rgba(248,113,113,'+alpha+')';
     }else if(o.death){
       blockCol='rgba(17,17,17,'+alpha+')'; // black death block
-    }else{
+    }else if(cube.grounded && jumpTime>0){jumpTime=0;}else{
       blockCol=o.top?'rgba(168,85,247,'+alpha+')':'rgba(168,85,247,'+alpha+')';
     }
     var borderCol=o.spike?'rgba(255,100,100,.8)':o.death?'rgba(80,80,80,.8)':'rgba(192,132,252,.8)';
@@ -615,7 +612,7 @@
         ctx.closePath();ctx.fill();
         ctx.strokeStyle=borderCol;
         ctx.lineWidth=2;ctx.stroke();
-      }else{
+      }else if(cube.grounded && jumpTime>0){jumpTime=0;}else{
         // ceiling block
         ctx.fillStyle=blockCol;
         ctx.fillRect(-o.w/2,0,o.w,o.h);
@@ -627,7 +624,7 @@
         ctx.font='12px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
         if(!o.death){ctx.fillText(':O',0,o.h/2);}
       }
-    }else{
+    }else if(cube.grounded && jumpTime>0){jumpTime=0;}else{
       ctx.translate(o.x+o.w/2,o.y+o.h);
       if(o.spike){
         // GD-style ground spike
@@ -639,7 +636,7 @@
         ctx.closePath();ctx.fill();
         ctx.strokeStyle=borderCol;
         ctx.lineWidth=2;ctx.stroke();
-      }else{
+      }else if(cube.grounded && jumpTime>0){jumpTime=0;}else{
         // GD-style ground block
         ctx.fillStyle=blockCol;
         ctx.fillRect(-o.w/2,-o.h,o.w,o.h);
@@ -661,7 +658,7 @@
       ctx.fillStyle=p.color;
       if(p.sq){
         ctx.fillRect(p.x-p.r/2,p.y-p.r/2,p.r,p.r);
-      }else{
+      }else if(cube.grounded && jumpTime>0){jumpTime=0;}else{
         ctx.beginPath();
         ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
         ctx.fill();
