@@ -30,7 +30,6 @@
   <div class="bottom-bar">
     <button class="btn" id="restartBtn">重新开始</button>
     <button class="btn" id="musicBtn" style="background:linear-gradient(180deg,#475569,#374151)">音乐：关</button>
-    <button class="btn" id="langBtn" style="background:linear-gradient(180deg,#374151,#1f2937);font-weight:700;font-size:14px;padding:12px 18px">EN</button>
     <button class="btn" id="homeBtn" style="background:linear-gradient(180deg,#374151,#1f2937)">返回主页</button>
   </div>
   <div style="display:flex;justify-content:center;gap:8px;padding:0 14px 8px">
@@ -65,7 +64,7 @@
     }catch(e){}
   }
   var musicOn=true,musicTimer=null,bgmStarted=false;
-  var musicBtn=document.getElementById('musicBtn');if(musicBtn)musicBtn.textContent=tr('musicOn');
+  var musicBtn=document.getElementById('musicBtn');if(musicBtn)musicBtn.textContent='音乐：开';
   function bgNote(freq,dur,type,gain){
     try{
       var ac=getAudio();
@@ -143,7 +142,7 @@
   }
   function toggleMusic(){
     musicOn=!musicOn;
-    if(musicBtn)musicBtn.textContent=musicOn?tr('musicOn'):tr('musicOff');
+    if(musicBtn)musicBtn.textContent='音乐：'+(musicOn?'开':'关');
     if(musicOn){
       buildSong();
       if(musicTimer)clearTimeout(musicTimer);
@@ -153,28 +152,7 @@
     }
   }
   if(musicBtn)musicBtn.addEventListener('click',toggleMusic);
-  function updateUI(){
-    document.getElementById('score').textContent=tr('score').replace('%s',score);
-    document.getElementById('best').textContent=tr('best').replace('%s',best);
-    document.getElementById('restartBtn').textContent=tr('restart');
-    document.getElementById('musicBtn').textContent=musicOn?tr('musicOn'):tr('musicOff');
-    document.getElementById('homeBtn').textContent=tr('home');
-    document.querySelectorAll('.diffBtn').forEach(function(b){
-      var d={easy:tr('easy'),normal:tr('normal'),hard:tr('hard')};
-      b.textContent=d[b.dataset.diff];
-    });
-    document.querySelector('.hint').innerHTML=tr('hint');
-    document.getElementById('langBtn').textContent=lang==='zh'?'EN':'中';
-  }
-  function stopMusic(){musicOn=false;if(musicBtn)musicBtn.textContent=tr('musicOff');if(musicTimer){clearTimeout(musicTimer);musicTimer=null;}}
-  var langBtn=document.getElementById('langBtn');
-  if(langBtn)langBtn.addEventListener('click',function(){
-    lang=lang==='zh'?'en':'zh';
-    updateUI();
-    if(musicBtn)musicBtn.textContent=musicOn?tr('musicOn'):tr('musicOff');
-    document.getElementById('score').textContent=tr('score').replace('%s',score);
-    document.getElementById('best').textContent=tr('best').replace('%s',best);
-  });
+  function stopMusic(){musicOn=false;if(musicBtn)musicBtn.textContent='音乐：关';if(musicTimer){clearTimeout(musicTimer);musicTimer=null;}}
 
   function powerupSound(){tone(660,.08,'triangle',.07);setTimeout(function(){tone(880,.15,'triangle',.07);},80);}
   function jumpSound(){tone(420,.1,'square',.05);setTimeout(function(){tone(560,.08,'square',.04);},60);}
@@ -185,9 +163,7 @@
   var best=Number(localStorage.getItem('ethan-dash-best')||0);
   var over=false;
   var frame=0;
-  var speed=5,lang='zh',difficulty=(localStorage.getItem('ethan-dash-diff')||'normal');
-  var langData={zh:{score:'得分：%s',best:'最高：%s',restart:'重新开始',musicOn:'音乐：开',musicOff:'音乐：关',home:'返回主页',hint:'点击 / 空格 / 触摸 跳跃 🟢=单跳 🔵=小心',diff:'难度：',easy:'简单',normal:'普通',hard:'困难',go:'GAME OVER',scoreL:'得分：%s',tap:'点击重新开始',nb:'⭐ NEW BEST!',shd:'🛡️ %ss',slw:'🐢 %ss',dbl:'✨ %ss'},en:{score:'Score: %s',best:'Best: %s',restart:'Restart',musicOn:'Music: On',musicOff:'Music: Off',home:'Home',hint:'Click / Space / Tap 🟢=Jump 🔵=Watch out',diff:'Difficulty:',easy:'Easy',normal:'Normal',hard:'Hard',go:'GAME OVER',scoreL:'Score: %s',tap:'Tap to Restart',nb:'⭐ NEW BEST!',shd:'🛡️ %ss',slw:'🐢 %ss',dbl:'✨ %ss'}};
-  function tr(s){return langData[lang][s]||s;}
+  var speed=5,difficulty=(localStorage.getItem('ethan-dash-diff')||'normal');
   function diffMult(prop){
     var cfg={easy:{spdBase:3.5,spdStep:0.2,gapMin:65,gapBase:100,gapDiv:10,spikePair:.25,spikeSingle:.02,chainBlk:.2,chainSpk:.15,deathPct:.01,pwRate:.25,spdInc:12},
        normal:{spdBase:5,spdStep:0.6,gapMin:42,gapBase:72,gapDiv:6,spikePair:.6,spikeSingle:.1,chainBlk:.4,chainSpk:.55,deathPct:.12,pwRate:.15,spdInc:8},
@@ -242,8 +218,8 @@
     shield=0;slow=0;doubleScore=0;invincible=0;safeBlocksNeeded=gapNeeded();nextIsSpike=false;
     attempts++;localStorage.setItem('ethan-dash-attempts',String(attempts));
     score=0;over=false;frame=0;speed=5;tick=0;lastMilestone=0;
-    document.getElementById('score').textContent=tr('score').replace('%s',0);
-    document.getElementById('best').textContent=tr('best').replace('%s',best);
+    document.getElementById('score').textContent='得分：0';
+    document.getElementById('best').textContent='最高：'+best;
   }
 
   function startBGM(){if(!bgmStarted){bgmStarted=true;buildSong();musicLoop();}}
@@ -390,7 +366,7 @@
     if(score>best){
       best=score;
       localStorage.setItem('ethan-dash-best',String(best));
-      document.getElementById('best').textContent=tr('best').replace('%s',best);
+      document.getElementById('best').textContent='最高：'+best;
     }
     setTimeout(function(){over=true;},600);
   }
@@ -405,7 +381,7 @@
         o.passed=true;
         var addScore=doubleScore>0?2:1;
         score+=addScore;
-        document.getElementById('score').textContent=tr('score').replace('%s',score);
+        document.getElementById('score').textContent='得分：'+score;
         var ms=Math.floor(score/10)*10;
         if(ms>0 && ms>lastMilestone){
           lastMilestone=ms;
@@ -767,23 +743,23 @@
       // powerup indicators (right side)
       ctx.textAlign='right';ctx.font='18px Arial';
       var iy=8;
-      if(shield>0){ctx.fillStyle='#facc15';ctx.fillText(tr('shd').replace('%s',shield.toFixed(0)),W-20,iy);iy+=24;}
-      if(slow>0){ctx.fillStyle='#38bdf8';ctx.fillText(tr('slw').replace('%s',slow.toFixed(0)),W-20,iy);iy+=24;}
-      if(doubleScore>0){ctx.fillStyle='#a855f7';ctx.fillText(tr('dbl').replace('%s',doubleScore.toFixed(0)),W-20,iy);}
+      if(shield>0){ctx.fillStyle='#facc15';ctx.fillText('🛡️ '+shield.toFixed(0)+'s',W-20,iy);iy+=24;}
+      if(slow>0){ctx.fillStyle='#38bdf8';ctx.fillText('🐢 '+slow.toFixed(0)+'s',W-20,iy);iy+=24;}
+      if(doubleScore>0){ctx.fillStyle='#a855f7';ctx.fillText('✨ '+doubleScore.toFixed(0)+'s',W-20,iy);}
       // GD-style game over
       ctx.fillStyle='#fff';
       ctx.textAlign='center';
       ctx.font='bold 48px Arial';
-      ctx.fillText(tr('go'),W/2,H/2-40);
+      ctx.fillText('GAME OVER',W/2,H/2-40);
       ctx.font='24px Arial';
       ctx.fillStyle='rgba(255,255,255,.7)';
-      ctx.fillText(tr('scoreL').replace('%s',score),W/2,H/2+5);
+      ctx.fillText('Score: '+score,W/2,H/2+5);
       ctx.font='16px Arial';
       ctx.fillStyle='rgba(255,255,255,.4)';
-      ctx.fillText(tr('tap'),W/2,H/2+45);
+      ctx.fillText('点击重新开始',W/2,H/2+45);
       if(score>0 && score>=best){
         ctx.fillStyle='#facc15';ctx.font='20px Arial';
-        ctx.fillText(tr('nb'),W/2,H/2+75);
+        ctx.fillText('⭐ NEW BEST!',W/2,H/2+75);
       }
       ctx.textAlign='left';
     }
@@ -828,7 +804,7 @@
     });
   });
 
-  document.getElementById('best').textContent=tr('best').replace('%s',best);
+  document.getElementById('best').textContent='最高：'+best;
   reset();
   loop();
 })();
