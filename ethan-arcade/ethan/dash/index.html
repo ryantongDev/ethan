@@ -65,6 +65,9 @@
     }catch(e){}
   }
   var musicOn=true,musicTimer=null,bgmStarted=false;
+  var speed=5,lang='zh',difficulty=(localStorage.getItem('ethan-dash-diff')||'normal');
+  var langData={zh:{score:'得分：%s',best:'最高：%s',restart:'重新开始',musicOn:'音乐：开',musicOff:'音乐：关',home:'返回主页',hint:'点击 / 空格 / 触摸 跳跃 🟢=单跳 🔵=小心',diff:'难度：',easy:'简单',normal:'普通',hard:'困难',go:'GAME OVER',scoreL:'得分：%s',tap:'点击重新开始',nb:'⭐ NEW BEST!',shd:'🛡️ %ss',slw:'🐢 %ss',dbl:'✨ %ss'},en:{score:'Score: %s',best:'Best: %s',restart:'Restart',musicOn:'Music: On',musicOff:'Music: Off',home:'Home',hint:'Click / Space / Tap 🟢=Jump 🔵=Watch out',diff:'Difficulty:',easy:'Easy',normal:'Normal',hard:'Hard',go:'GAME OVER',scoreL:'Score: %s',tap:'Tap to Restart',nb:'⭐ NEW BEST!',shd:'🛡️ %ss',slw:'🐢 %ss',dbl:'✨ %ss'}};
+  function _t(s){return langData[lang][s]||s;}
   var musicBtn=document.getElementById('musicBtn');if(musicBtn)musicBtn.textContent=_t('musicOn');
   function bgNote(freq,dur,type,gain){
     try{
@@ -185,9 +188,7 @@
   var best=Number(localStorage.getItem('ethan-dash-best')||0);
   var over=false;
   var frame=0;
-  var speed=5,lang='zh',difficulty=(localStorage.getItem('ethan-dash-diff')||'normal');
-  var langData={zh:{score:'得分：%s',best:'最高：%s',restart:'重新开始',musicOn:'音乐：开',musicOff:'音乐：关',home:'返回主页',hint:'点击 / 空格 / 触摸 跳跃 🟢=单跳 🔵=小心',diff:'难度：',easy:'简单',normal:'普通',hard:'困难',go:'GAME OVER',scoreL:'得分：%s',tap:'点击重新开始',nb:'⭐ NEW BEST!',shd:'🛡️ %ss',slw:'🐢 %ss',dbl:'✨ %ss'},en:{score:'Score: %s',best:'Best: %s',restart:'Restart',musicOn:'Music: On',musicOff:'Music: Off',home:'Home',hint:'Click / Space / Tap 🟢=Jump 🔵=Watch out',diff:'Difficulty:',easy:'Easy',normal:'Normal',hard:'Hard',go:'GAME OVER',scoreL:'Score: %s',tap:'Tap to Restart',nb:'⭐ NEW BEST!',shd:'🛡️ %ss',slw:'🐢 %ss',dbl:'✨ %ss'}};
-  function _t(s){return langData[lang][s]||s;}
+
   function diffMult(prop){
     var cfg={easy:{spdBase:3.5,spdStep:0.2,gapMin:65,gapBase:100,gapDiv:10,spikePair:.25,spikeSingle:.02,chainBlk:.2,chainSpk:.15,deathPct:.01,pwRate:.25,spdInc:12},
        normal:{spdBase:5,spdStep:0.6,gapMin:42,gapBase:72,gapDiv:6,spikePair:.6,spikeSingle:.1,chainBlk:.4,chainSpk:.55,deathPct:.12,pwRate:.15,spdInc:8},
