@@ -141,7 +141,7 @@
     root.style.setProperty('--tag-bg', t.tagBg);
     root.style.setProperty('--tag-text', t.tagText);
     themeTag.textContent = t.name;
-    const userLine = document.getElementById('userLine'); if (userLine) userLine.textContent = `当前玩家：${currentUser || '未登录'}`;
+    const userLine = document.getElementById('userLine'); if (userLine) userLine.textContent = window.tr('hall_player').replace('%s',currentUser||'还没登录');
   </script>
   <script src="/ethan/achievement-helper.js"></script>
   <script>window.EthanAchievements && window.EthanAchievements.run();</script>
