@@ -84,6 +84,20 @@
       shoot_diff:'难度：%s',shoot_restart:'重新开始',shoot_hint:'科幻 HUD 版',
       shoot_music:'音乐',shoot_fire:'发射',shoot_move:'移动',
       shoot_easy:'简单',shoot_normal:'普通',shoot_hard:'困难',
+
+      music_on:'音乐：开',music_off:'音乐：关',
+      target_time:'时间：%s',target_diff:'难度：%s',target_easy:'简单',target_normal:'普通',target_hard:'困难',
+      balloon_ammo:'石子：%s',
+      dodge_intensity:'强度：%s',dodge_time:'存活：%ss',dodge_best:'最佳：%ss',
+      fruit_diff:'难度：%s',fruit_easy:'简单',fruit_normal:'普通',fruit_hard:'困难',fruit_timeup:'时间到',fruit_round_score:'本局分数：%s',
+      csr_head:'爆头：%s',csr_time:'时间：%s',csr_diff:'难度：%s',csr_easy:'简单',csr_normal:'普通',csr_hard:'困难',
+      csr_end:'训练结束',csr_result:'分数：%s ｜ 爆头：%s',csr_headshot:'爆头！',
+      csd_you:'你：%s',csd_enemy:'敌人：%s',csd_round:'回合：%s',csd_diff:'难度：%s',
+      csd_ko:'你被击倒了',csd_survive_round:'撑到了第 %s 回合',csd_win:'你赢了！',csd_lose:'你输了！',
+      fight_you:'你：%s',fight_enemy:'对手：%s',fight_status_val:'状态：%s',fight_fighting:'战斗中',
+      fight_diff:'难度：%s',fight_win:'你赢了',fight_lose:'你输了',
+      shoot_gameover:'游戏结束',shoot_final_score:'最终分数：%s',shoot_restart_hint:'点中间"发射"可直接重新开始',
+      shoot_rapid:'连发 %ss',shoot_double:'双发 %ss',shoot_big:'大弹 %ss',
       langBtn:'EN',
 
       // Theme names
@@ -177,7 +191,22 @@
       shoot_diff:'Difficulty: %s',shoot_restart:'Restart',shoot_hint:'Sci-fi HUD',
       shoot_music:'Music',shoot_fire:'Fire',shoot_move:'Move',
       shoot_easy:'Easy',shoot_normal:'Normal',shoot_hard:'Hard',
+
+      music_on:'Music: On',music_off:'Music: Off',
+      target_time:'Time: %s',target_diff:'Difficulty: %s',target_easy:'Easy',target_normal:'Normal',target_hard:'Hard',
+      balloon_ammo:'Balls: %s',
+      dodge_intensity:'Level: %s',dodge_time:'Time: %ss',dodge_best:'Best: %ss',
+      fruit_diff:'Difficulty: %s',fruit_easy:'Easy',fruit_normal:'Normal',fruit_hard:'Hard',fruit_timeup:'Time Up',fruit_round_score:'Score: %s',
+      csr_head:'Head: %s',csr_time:'Time: %s',csr_diff:'Difficulty: %s',csr_easy:'Easy',csr_normal:'Normal',csr_hard:'Hard',
+      csr_end:'Training Complete',csr_result:'Score: %s | Headshots: %s',csr_headshot:'Headshot!',
+      csd_you:'You: %s',csd_enemy:'Enemy: %s',csd_round:'Round: %s',csd_diff:'Difficulty: %s',
+      csd_ko:'You were knocked out',csd_survive_round:'Survived %s rounds',csd_win:'You Win!',csd_lose:'You Lose!',
+      fight_you:'You: %s',fight_enemy:'Opponent: %s',fight_status_val:'Status: %s',fight_fighting:'Fighting',
+      fight_diff:'Difficulty: %s',fight_win:'You Win',fight_lose:'You Lose',
+      shoot_gameover:'GAME OVER',shoot_final_score:'Final Score: %s',shoot_restart_hint:'Tap "Fire" to restart',
+      shoot_rapid:'Rapid %ss',shoot_double:'Double %ss',shoot_big:'Big %ss',
       langBtn:'中',
+
 
       themeDefault:'ETHAN ARCADE',
       themeHunter:'Blue Hunter Theme',

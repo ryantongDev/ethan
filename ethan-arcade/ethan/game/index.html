@@ -142,19 +142,19 @@
 <body>
   <div class="app">
     <div class="topbar">
-      <div class="badge" id="scoreText">分数：0</div>
+      <div class="badge" id="scoreText" data-i18n="shoot_score">分数：0</div>
       <div class="badge" id="hpText">生命：7</div>
-      <div class="badge" id="modeText">难度：普通</div>
+      <div class="badge" id="modeText" data-i18n="shoot_diff">难度：普通</div>
     </div>
-    <div class="title">星域射击</div>
+    <div class="title"> data-i18n="shoot_title">星域射击<</div>
     <div class="subtitle">科幻 HUD 版｜触屏按钮操作｜电脑也支持 A D / ← → / 空格</div>
     <div class="game-wrap">
       <canvas id="game" width="540" height="960"></canvas>
     </div>
     <div class="controls">
-      <div class="btn" id="musicBtn">音乐</div>
+      <div class="btn" id="musicBtn" data-i18n="shoot_music">音乐</div>
       <div class="btn" id="leftBtn">←</div>
-      <div class="btn shoot" id="shootBtn">发射</div>
+      <div class="btn shoot" id="shootBtn" data-i18n="shoot_fire">发射</div>
       <div class="btn" id="rightBtn">→</div>
     </div>
     <div class="bottom-tip">点上方“难度”可切换简单 / 普通 / 困难。大球掉道具概率更高，简单模式更容易掉，困难模式更难掉。</div>
@@ -209,7 +209,7 @@
     let musicTimer = null;
     function stopMusic() {
       musicOn = false;
-      if (musicBtn) musicBtn.textContent = '音乐：关';
+      if (musicBtn) musicBtn.textContent = window.tr('music_off');
       if (musicTimer) { clearTimeout(musicTimer); musicTimer = null; }
     }
     function bgNote(freq = 440, dur = 0.18, type = 'sine', gainValue = 0.014) {
@@ -234,7 +234,7 @@
     }
     function toggleMusic() {
       musicOn = !musicOn;
-      musicBtn.textContent = `音乐：${musicOn ? '开' : '关'}`;
+      musicBtn.textContent = musicOn?window.tr('music_on'):window.tr('music_off');
       if (musicOn) {
         if (audioCtx.state === 'suspended') audioCtx.resume();
         musicLoop();
@@ -286,9 +286,9 @@
     }
 
     function updateHud() {
-      scoreText.textContent = `分数：${score}`;
-      hpText.textContent = `生命：${hp}`;
-      modeText.textContent = `难度：${cfg().label}`;
+      scoreText.textContent = window.tr('shoot_score').replace('%s',score);
+      hpText.textContent = window.tr('shoot_life').replace('%s',hp);
+      modeText.textContent = window.tr('shoot_diff').replace('%s',cfg().label);
     }
 
     window.addEventListener('keydown', (e) => {
@@ -570,9 +570,9 @@
       drawPlayer();
 
       ctx.font = '18px Arial';
-      if (rapidTimer > 0) ctx.fillText(`连发 ${rapidTimer.toFixed(0)}s`, 20, 102);
-      if (doubleTimer > 0) ctx.fillText(`双发 ${doubleTimer.toFixed(0)}s`, 20, 126);
-      if (bigBulletTimer > 0) ctx.fillText(`大弹 ${bigBulletTimer.toFixed(0)}s`, 20, 150);
+      if (rapidTimer > 0) ctx.fillText(window.tr('shoot_rapid').replace('%s',rapidTimer.toFixed(0)), 20, 102);
+      if (doubleTimer > 0) ctx.fillText(window.tr('shoot_double').replace('%s',doubleTimer.toFixed(0)), 20, 126);
+      if (bigBulletTimer > 0) ctx.fillText(window.tr('shoot_big').replace('%s',bigBulletTimer.toFixed(0)), 20, 150);
 
       if (gameOver) {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.58)';
@@ -580,11 +580,11 @@
         ctx.fillStyle = '#fff';
         ctx.textAlign = 'center';
         ctx.font = 'bold 44px Arial';
-        ctx.fillText('游戏结束', canvas.width / 2, canvas.height / 2 - 30);
+        ctx.fillText(window.tr('shoot_gameover'), canvas.width / 2, canvas.height / 2 - 30);
         ctx.font = '26px Arial';
-        ctx.fillText(`最终分数：${score}`, canvas.width / 2, canvas.height / 2 + 16);
+        ctx.fillText(window.tr('shoot_final_score').replace('%s',score), canvas.width / 2, canvas.height / 2 + 16);
         ctx.font = '22px Arial';
-        ctx.fillText('点中间“发射”可直接重新开始', canvas.width / 2, canvas.height / 2 + 58);
+        ctx.fillText(window.tr('shoot_restart_hint'), canvas.width / 2, canvas.height / 2 + 58);
         ctx.textAlign = 'left';
       }
     }
