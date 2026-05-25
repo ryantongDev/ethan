@@ -148,7 +148,10 @@
     });
     // update lang button
     var langBtn=document.getElementById('langBtn');
-    if(langBtn)langBtn.textContent=tr('langBtn');
+    if(langBtn){
+      langBtn.textContent=tr('langBtn');
+      langBtn.onclick=toggleLang;
+    }
   };
   window.toggleLang=function(){
     setLang(lang==='zh'?'en':'zh');
@@ -160,6 +163,9 @@
       el.innerHTML=tr(el.getAttribute('data-i18n'));
     });
     var langBtn=document.getElementById('langBtn');
-    if(langBtn)langBtn.textContent=tr('langBtn');
+    if(langBtn){
+      langBtn.textContent=tr('langBtn');
+      langBtn.onclick=toggleLang;
+    }
   });
 })();
