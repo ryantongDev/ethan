@@ -285,6 +285,7 @@ window.addEventListener("load", function(){
     score=0;over=false;frame=0;speed=5;tick=0;dustTimer=0;lastMilestone=0;
     document.getElementById('score').textContent=_t('score').replace('%s',0);
     document.getElementById('best').textContent=_t('best').replace('%s',best);
+    try{if(window.CrazyGames&&window.CrazyGames.SDK){window.CrazyGames.SDK.game.gameplayStart();}}catch(e){}
   }
 
   function startBGM(){if(!bgmStarted){bgmStarted=true;buildSong();musicLoop();}}
@@ -410,6 +411,7 @@ window.addEventListener("load", function(){
       for(var i=0;i<20;i++){particles.push({x:cube.x+cube.w/2+(Math.random()-.5)*80,y:cube.y+cube.h/2+(Math.random()-.5)*80,vx:(Math.random()-.5)*200,vy:(Math.random()-.5)*200,life:.5,color:'#facc15',r:4+Math.random()*4});}
       return;
     }
+    try{if(window.CrazyGames&&window.CrazyGames.SDK){window.CrazyGames.SDK.game.gameplayStop();}}catch(e){}
     squash=0;
     cube.dead=true;
     stopMusic();
