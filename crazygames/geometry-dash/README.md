@@ -1,6 +1,6 @@
-# Geometry Dash - CrazyGames Submission
+# Cube Dash - CrazyGames Submission
 
-A Geometry Dash-style HTML5 game, ready for upload to CrazyGames.
+A Cube Dash-style HTML5 game (formerly Geometry Dash), ready for upload to CrazyGames.
 
 ## Files
 
