@@ -16,6 +16,7 @@
     .btn{background:linear-gradient(180deg,#0ea5e9,#0369a1);border:none;border-radius:14px;padding:12px 28px;font-size:15px;font-weight:800;color:#fff;cursor:pointer;box-shadow:0 4px 12px rgba(14,165,233,.3)}
     .hint{text-align:center;color:rgba(255,255,255,.35);font-size:12px;padding:0 0 8px}
   </style>
+  <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
 </head>
 <body>
   <div class="topbar">
@@ -41,6 +42,21 @@
   </div>
 
 <script>
+// CrazyGames SDK
+var cgSDK = null;
+try { cgSDK = window.CrazyGames.SDK; cgSDK.init(); } catch(e) {}
+var adPending = false; // true when we need to show an ad before reset
+
+function requestAd(){
+  if(!cgSDK){ reset(); return; }
+  adPending = false;
+  cgSDK.ad.requestAd("midgame", {
+    adStarted: function(){ /* browser will auto-pause audio */ },
+    adFinished: function(){ reset(); },
+    adError: function(){ reset(); }
+  });
+}
+
 (function(){
   var canvas=document.getElementById('c');
   var ctx=canvas.getContext('2d');
@@ -802,21 +818,21 @@
   document.addEventListener('keydown',function(e){
     if(e.key===' '||e.key==='Spacebar'||e.key==='ArrowUp'){
       e.preventDefault();
-      if(over){reset();return;}
+      if(over){requestAd();return;}
       jump();
     }
   });
   document.addEventListener('click',function(){
     startBGM();
-    if(over){reset();return;}
+    if(over){requestAd();return;}
     jump();
   });
   canvas.addEventListener('touchstart',function(e){
     e.preventDefault();
-    if(over){reset();return;}
+    if(over){requestAd();return;}
     jump();
   },{passive:false});
-  document.getElementById('restartBtn').addEventListener('click',reset);
+  document.getElementById('restartBtn').addEventListener('click',function(){if(over){requestAd();}else{reset();}});
   document.getElementById('homeBtn').addEventListener('click',function(){location.href='/ethan/';});
   // difficulty buttons
   document.querySelectorAll('.diffBtn').forEach(function(b){
