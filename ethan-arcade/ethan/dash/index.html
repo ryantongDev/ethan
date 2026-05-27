@@ -42,28 +42,6 @@
   </div>
 
 <script>
-// CrazyGames SDK
-var cgReady = false;
-try {
-  if(window.CrazyGames && window.CrazyGames.SDK) {
-    var _cg = window.CrazyGames.SDK;
-    _cg.init().then(function(){
-      cgReady = true;
-    }).catch(function(){});
-  }
-} catch(e) {}
-
-function requestAd(){
-  if(!cgReady){ reset(); return; }
-  try {
-    window.CrazyGames.SDK.ad.requestAd("midgame", {
-      adStarted: function(){},
-      adFinished: function(){ reset(); },
-      adError: function(){ reset(); }
-    });
-  } catch(e){ reset(); }
-}
-
 (function(){
   var canvas=document.getElementById('c');
   var ctx=canvas.getContext('2d');
@@ -259,6 +237,28 @@ function requestAd(){
     rot:0,
     eyeY:0
   };
+
+  // CrazyGames SDK
+  var cgReady = false;
+  try {
+    if(window.CrazyGames && window.CrazyGames.SDK) {
+      var _cg = window.CrazyGames.SDK;
+      _cg.init().then(function(){
+        cgReady = true;
+      }).catch(function(){});
+    }
+  } catch(e) {}
+
+  function requestAd(){
+    if(!cgReady){ reset(); return; }
+    try {
+      window.CrazyGames.SDK.ad.requestAd("midgame", {
+        adStarted: function(){},
+        adFinished: function(){ reset(); },
+        adError: function(){ reset(); }
+      });
+    } catch(e){ reset(); }
+  }
 
   function reset(){
     cube={x:120,y:GROUND-40,w:40,h:40,vy:0,gravity:0.65,jumpForce:-16.5,grounded:true,dead:false,rot:0,eyeY:0};
