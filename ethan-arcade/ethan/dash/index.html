@@ -33,7 +33,7 @@
     <button class="btn" id="restartBtn">重新开始</button>
     <button class="btn" id="musicBtn" style="background:linear-gradient(180deg,#475569,#374151)">音乐：关</button>
     <button class="btn" id="langBtn" style="background:linear-gradient(180deg,#374151,#1f2937);font-weight:700;font-size:14px;padding:12px 18px">EN</button>
-    <button class="btn" id="homeBtn" style="background:linear-gradient(180deg,#374151,#1f2937)">返回主页</button>
+
   </div>
   <div style="display:flex;justify-content:center;gap:8px;padding:0 14px 8px">
     <span style="color:rgba(255,255,255,.45);font-size:12px;line-height:34px">难度：</span>
@@ -67,8 +67,8 @@
     }catch(e){}
   }
   var musicOn=true,musicTimer=null,bgmStarted=false;
-  var speed=5,lang='zh',difficulty=(localStorage.getItem('ethan-dash-diff')||'normal');
-  var langData={zh:{score:'得分：%s',best:'最高：%s',restart:'重新开始',musicOn:'音乐：开',musicOff:'音乐：关',home:'返回主页',hint:'点击 / 空格 / 触摸 跳跃 🟢=单跳 🔵=小心',diff:'难度：',easy:'简单',normal:'普通',hard:'困难',go:'GAME OVER',scoreL:'得分：%s',tap:'点击重新开始',nb:'⭐ NEW BEST!',shd:'🛡️ %ss',slw:'🐢 %ss',dbl:'✨ %ss'},en:{score:'Score: %s',best:'Best: %s',restart:'Restart',musicOn:'Music: On',musicOff:'Music: Off',home:'Home',hint:'Click / Space / Tap 🟢=Jump 🔵=Watch out',diff:'Difficulty:',easy:'Easy',normal:'Normal',hard:'Hard',go:'GAME OVER',scoreL:'Score: %s',tap:'Tap to Restart',nb:'⭐ NEW BEST!',shd:'🛡️ %ss',slw:'🐢 %ss',dbl:'✨ %ss'}};
+  var speed=5,lang='en',difficulty=(localStorage.getItem('ethan-dash-diff')||'normal');
+  var langData={zh:{score:'得分：%s',best:'最高：%s',restart:'重新开始',musicOn:'音乐：开',musicOff:'音乐：关',hint:'点击 / 空格 / 触摸 跳跃 🟢=单跳 🔵=小心',diff:'难度：',easy:'简单',normal:'普通',hard:'困难',go:'GAME OVER',scoreL:'得分：%s',tap:'点击重新开始',nb:'⭐ NEW BEST!',shd:'🛡️ %ss',slw:'🐢 %ss',dbl:'✨ %ss'},en:{score:'Score: %s',best:'Best: %s',restart:'Restart',musicOn:'Music: On',musicOff:'Music: Off',hint:'Click / Space / Tap 🟢=Jump 🔵=Watch out',diff:'Difficulty:',easy:'Easy',normal:'Normal',hard:'Hard',go:'GAME OVER',scoreL:'Score: %s',tap:'Tap to Restart',nb:'⭐ NEW BEST!',shd:'🛡️ %ss',slw:'🐢 %ss',dbl:'✨ %ss'}};
   function _t(s){return langData[lang][s]||s;}
   var musicBtn=document.getElementById('musicBtn');if(musicBtn)musicBtn.textContent=_t('musicOn');
   function bgNote(freq,dur,type,gain){
@@ -163,7 +163,7 @@
     document.getElementById('best').textContent=_t('best').replace('%s',best);
     document.getElementById('restartBtn').textContent=_t('restart');
     document.getElementById('musicBtn').textContent=musicOn?_t('musicOn'):_t('musicOff');
-    document.getElementById('homeBtn').textContent=_t('home');
+    
     document.querySelectorAll('.diffBtn').forEach(function(b){
       var d={easy:_t('easy'),normal:_t('normal'),hard:_t('hard')};
       b.textContent=d[b.dataset.diff];
@@ -840,7 +840,7 @@
     jump();
   },{passive:false});
   document.getElementById('restartBtn').addEventListener('click',function(){if(over){requestAd();}else{reset();}});
-  document.getElementById('homeBtn').addEventListener('click',function(){location.href='/ethan/';});
+  
   // difficulty buttons
   document.querySelectorAll('.diffBtn').forEach(function(b){
     b.addEventListener('click',function(){
