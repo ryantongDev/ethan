@@ -43,18 +43,25 @@
 
 <script>
 // CrazyGames SDK
-var cgSDK = null;
-try { cgSDK = window.CrazyGames.SDK; cgSDK.init(); } catch(e) {}
-var adPending = false; // true when we need to show an ad before reset
+var cgReady = false;
+try {
+  if(window.CrazyGames && window.CrazyGames.SDK) {
+    var _cg = window.CrazyGames.SDK;
+    _cg.init().then(function(){
+      cgReady = true;
+    }).catch(function(){});
+  }
+} catch(e) {}
 
 function requestAd(){
-  if(!cgSDK){ reset(); return; }
-  adPending = false;
-  cgSDK.ad.requestAd("midgame", {
-    adStarted: function(){ /* browser will auto-pause audio */ },
-    adFinished: function(){ reset(); },
-    adError: function(){ reset(); }
-  });
+  if(!cgReady){ reset(); return; }
+  try {
+    window.CrazyGames.SDK.ad.requestAd("midgame", {
+      adStarted: function(){},
+      adFinished: function(){ reset(); },
+      adError: function(){ reset(); }
+    });
+  } catch(e){ reset(); }
 }
 
 (function(){
