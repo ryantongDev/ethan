@@ -43,6 +43,18 @@
   </div>
 
 <script>
+// CrazyGames SDK - init
+window.cgSDK = null;
+window.addEventListener("load", async function(){
+  try {
+    if(window.CrazyGames && window.CrazyGames.SDK) {
+      window.cgSDK = window.CrazyGames.SDK;
+      await window.cgSDK.init();
+      console.log("cgSDK ready");
+    }
+  } catch(e) {}
+});
+
 (function(){
   var canvas=document.getElementById('c');
   var ctx=canvas.getContext('2d');
@@ -241,20 +253,10 @@
   };
 
   // CrazyGames SDK
-  var cgReady = false;
-  try {
-    if(window.CrazyGames && window.CrazyGames.SDK) {
-      var _cg = window.CrazyGames.SDK;
-      _cg.init().then(function(){
-        cgReady = true;
-      }).catch(function(){});
-    }
-  } catch(e) {}
-
   function requestAd(){
-    if(!cgReady){ reset(); return; }
+    if(!window.cgSDK){ reset(); return; }
     try {
-      window.CrazyGames.SDK.ad.requestAd("midgame", {
+      window.cgSDK.ad.requestAd("midgame", {
         adStarted: function(){},
         adFinished: function(){ reset(); },
         adError: function(){ reset(); }
