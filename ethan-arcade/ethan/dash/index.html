@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-  <title>Geometry Dash</title>
+  <title>Cube Dash</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🟦</text></svg>">
   <style>
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -22,7 +22,7 @@
 <body>
   <div class="topbar">
     <div class="badge" id="score">得分：0</div>
-    <div class="title">Geometry Dash</div>
+    <div class="title">Cube Dash</div>
     <div class="badge" id="best">最高：0</div>
   </div>
   <div class="game-wrap">
@@ -43,11 +43,19 @@
   </div>
 
 <script>
-// CrazyGames SDK - init
+// CrazyGames SDK - init with locale detection
 window.addEventListener("load", function(){
   try {
     if(window.CrazyGames && window.CrazyGames.SDK) {
-      window.CrazyGames.SDK.init();
+      var cgSDK=window.CrazyGames.SDK;
+      cgSDK.init().then(function(){
+        if(cgSDK.system && cgSDK.system.getSystemInfo){
+          var info=cgSDK.system.getSystemInfo();
+          if(info.locale && info.locale.indexOf('zh')>=0 && window.setGameLang){
+            window.setGameLang('zh');
+          }
+        }
+      });
     }
   } catch(e) {}
 });(function(){
@@ -180,6 +188,7 @@ window.addEventListener("load", function(){
     document.getElementById('langBtn').textContent=lang==='zh'?'EN':'中';
   }
   function stopMusic(){musicOn=false;if(musicBtn)musicBtn.textContent=_t('musicOff');if(musicTimer){clearTimeout(musicTimer);musicTimer=null;}}
+  window.setGameLang=function(l){lang=l;updateUI();if(musicBtn)musicBtn.textContent=musicOn?_t('musicOn'):_t('musicOff');}
   var langBtn=document.getElementById('langBtn');
   if(langBtn)langBtn.addEventListener('click',function(){
     lang=lang==='zh'?'en':'zh';
@@ -273,7 +282,7 @@ window.addEventListener("load", function(){
     obstacles=[];particles=[];powerups=[];trail=[];jumpTime=0;
     shield=0;slow=0;doubleScore=0;invincible=0;safeBlocksNeeded=gapNeeded();nextIsSpike=false;
     attempts++;localStorage.setItem('ethan-dash-attempts',String(attempts));
-    score=0;over=false;frame=0;speed=5;tick=0;lastMilestone=0;
+    score=0;over=false;frame=0;speed=5;tick=0;dustTimer=0;lastMilestone=0;
     document.getElementById('score').textContent=_t('score').replace('%s',0);
     document.getElementById('best').textContent=_t('best').replace('%s',best);
   }
@@ -471,21 +480,21 @@ window.addEventListener("load", function(){
     }
   }
 
-  function update(){
+  function update(dt){
     if(over)return;
-    frame++;
+    frame+=dt;
 
     // speed ramp (slowed when slow powerup active)
     speed=(diffMult('spdBase')+Math.floor(score/diffMult('spdInc'))*diffMult('spdStep'))*(slow>0?0.55:1);
 
     // jump physics (compensate gravity when slowed so cube still jumps far)
     var effectiveGravity=cube.gravity;
-    cube.vy+=effectiveGravity;
-    cube.y+=cube.vy;
-    cube.rot+=cube.grounded?0:(cube.vy<0?5:-5);
+    cube.vy+=effectiveGravity*dt;
+    cube.y+=cube.vy*dt;
+    cube.rot+=cube.grounded?0:(cube.vy<0?5*dt:-5*dt);
     // trail: record relative dx + y positions, absolute x computed at draw
     if(!cube.grounded && !cube.dead && !over){
-      jumpTime++;
+      jumpTime+=dt;
       trail.push({dx:jumpTime*speed*0.2,y:cube.y,life:1});
     }
     if(trail.length>28)trail.shift();
@@ -493,7 +502,7 @@ window.addEventListener("load", function(){
     // ground squash + running dust
     if(cube.grounded && !over && !cube.dead){
       squash=0.06*Math.sin(frame*0.4);
-      if(frame%4===0){
+      dustTimer-=dt;if(dustTimer<=0){dustTimer+=4;
         particles.push({
           x:cube.x+Math.random()*4,y:cube.y+cube.h-4,
           vx:-speed*1.5-Math.random()*30,vy:-Math.random()*8,
@@ -511,10 +520,10 @@ window.addEventListener("load", function(){
       cube.rot=Math.round(cube.rot/90)*90;
     }
 
-    // spawn obstacles
-    tick++;
+    // spawn obstacles (time-based)
+    tick+=dt;
     var gap=Math.max(diffMult('gapMin'),diffMult('gapBase')-Math.floor(score/diffMult('gapDiv'))*2);
-    if(tick%gap===0){
+    if(tick>=gap && !over){tick-=gap;
       if(Math.random()<diffMult('chainBlk') && obstacles.length<6){
         spawnChain();
       }else if(Math.random()<.55 && obstacles.length<5){
@@ -533,13 +542,13 @@ window.addEventListener("load", function(){
 
     // move obstacles
     for(var i=obstacles.length-1;i>=0;i--){
-      obstacles[i].x-=speed;
-      if(obstacles[i].flash>0)obstacles[i].flash-=0.5;
+      obstacles[i].x-=speed*dt;
+      if(obstacles[i].flash>0)obstacles[i].flash-=0.5*dt;
       if(obstacles[i].x+obstacles[i].w<-40)obstacles.splice(i,1);
     }
     // move & collide powerups
     for(var i=powerups.length-1;i>=0;i--){
-      var pu=powerups[i];pu.x-=speed-1;
+      var pu=powerups[i];pu.x-=(speed-1)*dt;
       var dx=cube.x+cube.w/2-pu.x,dy=cube.y+cube.h/2-pu.y;
       if(dx*dx+dy*dy<(pu.r+cube.w/2)*(pu.r+cube.w/2)){
         powerupSound();
@@ -552,18 +561,18 @@ window.addEventListener("load", function(){
       }
     }
     // update powerup timers (also invincibility)
-    shield=Math.max(0,shield-0.016);
-    slow=Math.max(0,slow-0.016);
-    doubleScore=Math.max(0,doubleScore-0.016);
-    invincible=Math.max(0,invincible-0.016);
+    shield=Math.max(0,shield-0.016*dt);
+    slow=Math.max(0,slow-0.016*dt);
+    doubleScore=Math.max(0,doubleScore-0.016*dt);
+    invincible=Math.max(0,invincible-0.016*dt);
 
     // particles
     for(var i=particles.length-1;i>=0;i--){
       var p=particles[i];
-      p.x+=p.vx*0.016;
-      p.y+=p.vy*0.016;
-      p.vy+=8;
-      p.life-=0.016;
+      p.x+=p.vx*0.016*dt;
+      p.y+=p.vy*0.016*dt;
+      p.vy+=8*dt;
+      p.life-=0.016*dt;
       if(p.life<=0)particles.splice(i,1);
     }
 
@@ -820,11 +829,15 @@ window.addEventListener("load", function(){
     }
   }
 
-  function loop(){
+  var lastTime=performance.now();
+  function loop(now){
+    now=now||performance.now();
+    var dt=Math.min((now-lastTime)/16.667,3); // normalize to 60fps, cap at 3 for tab-switch
+    lastTime=now;
     try{
-      update();
-      draw();
-    }catch(e){console.log(e);}
+      update(dt);
+      draw(dt);
+    }catch(e){}
     requestAnimationFrame(loop);
   }
 
