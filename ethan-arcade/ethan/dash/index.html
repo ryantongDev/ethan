@@ -36,7 +36,7 @@
 
   </div>
   <div style="display:flex;justify-content:center;gap:8px;padding:0 14px 8px">
-    <span style="color:rgba(255,255,255,.45);font-size:12px;line-height:34px">难度：</span>
+    <span id="diffLabel" style="color:rgba(255,255,255,.45);font-size:12px;line-height:34px">Difficulty:</span>
     <button class="diffBtn" data-diff="easy" style="background:linear-gradient(180deg,#22c55e,#15803d);border:none;border-radius:10px;padding:8px 20px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;opacity:.5">简单</button>
     <button class="diffBtn" data-diff="normal" style="background:linear-gradient(180deg,#eab308,#a16207);border:none;border-radius:10px;padding:8px 20px;font-size:13px;font-weight:700;color:#fff;cursor:pointer">普通</button>
     <button class="diffBtn" data-diff="hard" style="background:linear-gradient(180deg,#ef4444,#b91c1c);border:none;border-radius:10px;padding:8px 20px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;opacity:.5">困难</button>
@@ -168,6 +168,7 @@
       var d={easy:_t('easy'),normal:_t('normal'),hard:_t('hard')};
       b.textContent=d[b.dataset.diff];
     });
+    document.getElementById('diffLabel').textContent=_t('diff');
     document.querySelector('.hint').innerHTML=_t('hint');
     document.getElementById('langBtn').textContent=lang==='zh'?'EN':'中';
   }
@@ -852,6 +853,7 @@
     });
   });
 
+  updateUI();
   document.getElementById('best').textContent=_t('best').replace('%s',best);
   reset();
   loop();
