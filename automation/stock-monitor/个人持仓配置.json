@@ -1,0 +1,12 @@
+{
+  "name": "老张个人持仓",
+  "stocks": {
+    "600011": { "name": "华能国际", "shares": 1500, "cost": 7.53, "direction": "电力防守" },
+    "002600": { "name": "领益智造", "shares": 900,  "cost": 15.73, "direction": "消费电子" },
+    "002892": { "name": "科力尔",   "shares": 600,  "cost": 11.88, "direction": "机器人" },
+    "300124": { "name": "汇川技术", "shares": 200,  "cost": 78.72, "direction": "机器人/工业" }
+  },
+  "watchlist": ["000001"],
+  "market_index": "000001",
+  "personalized_review": true
+}
