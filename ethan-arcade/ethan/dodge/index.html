@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
+  <script src="/ethan/lang.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>深空逃生</title>
@@ -40,7 +41,7 @@
     <div class="actions">
       <button id="musicBtn">音乐：关</button>
       <a class="back" href="/ethan/">返回首页</a>
-      <button id="restart">重新开始</button>
+      <button id="restart" data-i18n="dodge_restart">重新开始</button>
     </div>
   </div>
   <script>
@@ -76,7 +77,7 @@
     let musicTimer = null;
     function stopMusic() {
       musicOn = false;
-      if (musicBtn) musicBtn.textContent = '音乐：关';
+      if (musicBtn) musicBtn.textContent = window.tr('music_off');
       if (musicTimer) { clearTimeout(musicTimer); musicTimer = null; }
     }
     function bgNote(freq = 440, dur = 0.18, type = 'sine', gainValue = 0.014) {
@@ -101,7 +102,7 @@
     }
     function toggleMusic() {
       musicOn = !musicOn;
-      musicBtn.textContent = `音乐：${musicOn ? '开' : '关'}`;
+      musicBtn.textContent = musicOn?window.tr('music_on'):window.tr('music_off');
       if (musicOn) {
         if (audioCtx.state === 'suspended') audioCtx.resume();
         musicLoop();
@@ -128,9 +129,9 @@
     }
 
     function hud() {
-      timeEl.textContent = `存活：${aliveTime.toFixed(1)}s`;
-      bestEl.textContent = `最佳：${best.toFixed(1)}s`;
-      speedEl.textContent = `强度：${Math.min(99, 1 + Math.floor(aliveTime / 5))}`;
+      timeEl.textContent = window.tr('dodge_time').replace('%s',aliveTime.toFixed(1));
+      bestEl.textContent = window.tr('dodge_best').replace('%s',best.toFixed(1));
+      speedEl.textContent = window.tr('dodge_intensity').replace('%s',Math.min(99,1+Math.floor(aliveTime/5)));
     }
 
     function spawnRock() {

@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
+  <script src="/ethan/lang.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>街机格斗</title>
@@ -37,7 +38,7 @@
     <div class="controls" style="grid-template-columns: 1fr 1fr 1fr;">
       <button id="musicBtn">音乐：关</button>
       <a class="back" href="/ethan/">返回首页</a>
-      <button id="restart">重新开始</button>
+      <button id="restart" data-i18n="fight_restart">重新开始</button>
     </div>
   </div>
   <script>
@@ -59,15 +60,15 @@
     };
     let difficulty = localStorage.getItem('ethan-fight-difficulty') || 'normal';
     function cfg(){ return difficultyMap[difficulty] || difficultyMap.normal; }
-    function refreshDifficultyBtn(){ difficultyBtn.textContent = `难度：${cfg().label}`; }
+    function refreshDifficultyBtn(){ difficultyBtn.textContent = window.tr('fight_diff').replace('%s',cfg().label); }
     difficultyBtn.addEventListener('click', () => { difficulty = difficulty === 'easy' ? 'normal' : difficulty === 'normal' ? 'hard' : 'easy'; localStorage.setItem('ethan-fight-difficulty', difficulty); refreshDifficultyBtn(); resetGame(); });
     function endJingle(kind) { if (audioCtx.state === 'suspended') audioCtx.resume(); const seq = kind === 'win' ? [523.25,659.25,783.99] : [392,311.13,220]; const types = kind === 'win' ? ['triangle','triangle','sine'] : ['sawtooth','triangle','sine']; seq.forEach((f, i) => { const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.type = types[i]; o.frequency.setValueAtTime(f, audioCtx.currentTime + i * 0.16); g.gain.setValueAtTime(0.001, audioCtx.currentTime + i * 0.16); g.gain.exponentialRampToValueAtTime(0.08, audioCtx.currentTime + i * 0.16 + 0.02); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.16 + 0.18); o.connect(g); g.connect(audioCtx.destination); o.start(audioCtx.currentTime + i * 0.16); o.stop(audioCtx.currentTime + i * 0.16 + 0.2); }); }
     const musicBtn = document.getElementById('musicBtn');
     let musicOn = false, musicTimer = null;
-    function stopMusic(){ musicOn = false; musicBtn.textContent = '音乐：关'; if (musicTimer) { clearTimeout(musicTimer); musicTimer = null; } }
+    function stopMusic(){ musicOn = false; musicBtn.textContent = window.tr('music_off'); if (musicTimer) { clearTimeout(musicTimer); musicTimer = null; } }
     function bgNote(freq = 440, dur = 0.18, type = 'sine', gainValue = 0.014) { if (audioCtx.state === 'suspended') audioCtx.resume(); const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.type = type; o.frequency.setValueAtTime(freq, audioCtx.currentTime); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(gainValue, audioCtx.currentTime + 0.02); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + dur + 0.02); }
     function musicLoop(){ if (!musicOn) return; const lead = [220,293.66,329.63,392,329.63,293.66,261.63,220]; const bass = [110,146.83,164.81,196,164.81,146.83,130.81,110]; lead.forEach((f, i) => setTimeout(() => bgNote(f, 0.26, 'square', 0.012), i * 240)); bass.forEach((f, i) => setTimeout(() => bgNote(f, 0.34, 'triangle', 0.008), i * 240 + 60)); musicTimer = setTimeout(musicLoop, 2200); }
-    musicBtn.addEventListener('click', () => { musicOn = !musicOn; musicBtn.textContent = `音乐：${musicOn ? '开' : '关'}`; if (musicOn) musicLoop(); else if (musicTimer) { clearTimeout(musicTimer); musicTimer = null; } });
+    musicBtn.addEventListener('click', () => { musicOn = !musicOn; musicBtn.textContent = musicOn?window.tr('music_on'):window.tr('music_off'); if (musicOn) musicLoop(); else if (musicTimer) { clearTimeout(musicTimer); musicTimer = null; } });
     function sound(kind){ if (audioCtx.state === 'suspended') audioCtx.resume(); const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); if (kind==='punch'){ o.type='square'; o.frequency.setValueAtTime(200, audioCtx.currentTime); o.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime+0.08); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.07, audioCtx.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+0.09); } else if (kind==='heal'){ o.type='triangle'; o.frequency.setValueAtTime(520, audioCtx.currentTime); o.frequency.exponentialRampToValueAtTime(760, audioCtx.currentTime+0.08); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.06, audioCtx.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+0.1); } else { o.type='triangle'; o.frequency.setValueAtTime(440, audioCtx.currentTime); o.frequency.linearRampToValueAtTime(660, audioCtx.currentTime+0.12); g.gain.setValueAtTime(0.001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.06, audioCtx.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+0.14); } o.start(); o.stop(audioCtx.currentTime+0.15); }
     const touch = { left:false, right:false };
     const keys = {};
@@ -80,7 +81,7 @@
     window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
     let player, enemy, effects, pickups, over, last;
     function resetGame(){ const c = cfg(); player = { x:120, y:760, hp:c.playerHp, maxHp:c.playerHp, color:'#60a5fa', attackCd:0, attacking:0 }; enemy = { x:420, y:760, hp:c.enemyHp, maxHp:c.enemyHp, color:'#f87171', attackCd:0, attacking:0 }; effects = []; pickups = []; over = false; last = performance.now(); refreshDifficultyBtn(); hud(); }
-    function hud(){ playerHpEl.textContent = `你：${Math.max(0, Math.ceil(player.hp))}`; enemyHpEl.textContent = `对手：${Math.max(0, Math.ceil(enemy.hp))}`; statusEl.textContent = over ? `状态：${player.hp <= 0 ? '你输了' : '你赢了'}` : '状态：战斗中'; }
+    function hud(){ playerHpEl.textContent = window.tr('fight_you').replace('%s',Math.max(0,Math.ceil(player.hp))); enemyHpEl.textContent = window.tr('fight_enemy').replace('%s',Math.max(0,Math.ceil(enemy.hp))); statusEl.textContent = over ? window.tr('fight_status_val').replace('%s',player.hp<=0?window.tr('fight_lose'):window.tr('fight_win')) : window.tr('fight_fighting'); }
     function bindHold(el, key){ const on = e => { touch[key] = true; e.preventDefault(); }; const off = e => { touch[key] = false; e.preventDefault(); }; el.addEventListener('touchstart', on, { passive:false }); el.addEventListener('touchend', off, { passive:false }); el.addEventListener('touchcancel', off, { passive:false }); el.addEventListener('mousedown', on); el.addEventListener('mouseup', off); el.addEventListener('mouseleave', off); }
     bindHold(leftBtn, 'left'); bindHold(rightBtn, 'right');
     function attack(attacker, defender, damage){ if (attacker.attackCd > 0 || over) return; sound('punch'); attacker.attackCd = attacker === player ? cfg().playerCd : cfg().enemyCd; attacker.attacking = 0.18; if (Math.abs(attacker.x - defender.x) < 110) { defender.hp -= damage; effects.push({ x:defender.x, y:defender.y - 40, text:`-${damage}`, life:0.5, color:'#fef08a' }); if (defender === enemy && Math.random() < cfg().healDrop) pickups.push({ x: enemy.x, y: 700, type:'heal', life:6 }); if (defender.hp <= 0) { over = true; stopMusic(); sound('win'); endJingle(attacker === player ? 'win' : 'lose'); } } hud(); }

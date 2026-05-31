@@ -1,0 +1,247 @@
+{
+  "update_time": "2026-05-27 11:03:26",
+  "market_status": "交易中",
+  "stocks": [
+    {
+      "name": "汇川技术",
+      "code": "300124",
+      "price": 79.45,
+      "cost": 77.41,
+      "pnl_pct": 2.64,
+      "stop": 75.0,
+      "risk": "✅"
+    },
+    {
+      "name": "科力尔",
+      "code": "002892",
+      "price": 11.89,
+      "cost": 11.4,
+      "pnl_pct": 4.3,
+      "stop": 10.8,
+      "risk": "✅"
+    },
+    {
+      "name": "上证指数",
+      "code": "000001",
+      "price": 4122.49,
+      "cost": 0,
+      "pnl_pct": null,
+      "stop": 4030,
+      "risk": "✅"
+    },
+    {
+      "name": "华能国际",
+      "code": "600011",
+      "price": 7.66,
+      "cost": 7.53,
+      "pnl_pct": 1.73,
+      "stop": 7.2,
+      "risk": "✅"
+    },
+    {
+      "name": "中科曙光",
+      "code": "603019",
+      "price": 93.6,
+      "cost": 0,
+      "pnl_pct": null,
+      "stop": null,
+      "risk": "✅"
+    },
+    {
+      "name": "中际旭创",
+      "code": "300308",
+      "price": 1140.19,
+      "cost": 0,
+      "pnl_pct": null,
+      "stop": null,
+      "risk": "✅"
+    },
+    {
+      "name": "拓普集团",
+      "code": "601689",
+      "price": 68.74,
+      "cost": 0,
+      "pnl_pct": null,
+      "stop": 64.0,
+      "risk": "✅"
+    },
+    {
+      "name": "航天电子",
+      "code": "600879",
+      "price": 20.91,
+      "cost": 0,
+      "pnl_pct": null,
+      "stop": null,
+      "risk": "✅"
+    },
+    {
+      "name": "中国卫星",
+      "code": "600118",
+      "price": 82.49,
+      "cost": 0,
+      "pnl_pct": null,
+      "stop": null,
+      "risk": "✅"
+    },
+    {
+      "name": "歌尔股份",
+      "code": "002241",
+      "price": 28.36,
+      "cost": 0,
+      "pnl_pct": null,
+      "stop": 24.0,
+      "risk": "✅"
+    },
+    {
+      "name": "工业富联",
+      "code": "601138",
+      "price": 72.95,
+      "cost": 0,
+      "pnl_pct": null,
+      "stop": null,
+      "risk": "✅"
+    },
+    {
+      "name": "大族激光",
+      "code": "002008",
+      "price": 134.42,
+      "cost": 0,
+      "pnl_pct": null,
+      "stop": null,
+      "risk": "✅"
+    },
+    {
+      "name": "长江电力",
+      "code": "600900",
+      "price": 27.15,
+      "cost": 0,
+      "pnl_pct": null,
+      "stop": null,
+      "risk": "✅"
+    },
+    {
+      "name": "国投电力",
+      "code": "600886",
+      "price": 13.72,
+      "cost": 0,
+      "pnl_pct": null,
+      "stop": null,
+      "risk": "✅"
+    },
+    {
+      "name": "领益智造",
+      "code": "002600",
+      "price": 15.8,
+      "cost": 0,
+      "pnl_pct": null,
+      "stop": 14.8,
+      "risk": "✅"
+    },
+    {
+      "name": "中国平安",
+      "code": "601318",
+      "price": 53.22,
+      "cost": 0,
+      "pnl_pct": null,
+      "stop": null,
+      "risk": "✅"
+    },
+    {
+      "name": "中国太保",
+      "code": "601601",
+      "price": 32.55,
+      "cost": 0,
+      "pnl_pct": null,
+      "stop": null,
+      "risk": "✅"
+    },
+    {
+      "name": "中信证券",
+      "code": "600030",
+      "price": 25.74,
+      "cost": 0,
+      "pnl_pct": null,
+      "stop": null,
+      "risk": "✅"
+    },
+    {
+      "name": "华泰证券",
+      "code": "601688",
+      "price": 18.54,
+      "cost": 0,
+      "pnl_pct": null,
+      "stop": 17.5,
+      "risk": "✅"
+    }
+  ],
+  "alerts": [
+    {
+      "symbol": "002892",
+      "name": "科力尔",
+      "price": 11.89,
+      "type": "📤卖出信号",
+      "label": "📤卖出: 11.75~11.95 | 卖出区间到了，减400股",
+      "pos": "800股@11.40",
+      "change_pct": -3.72,
+      "conclusion": "卖出区间已到，执行纪律",
+      "trigger_signal": "📤卖出: 11.75~11.95",
+      "sell_range": "11.75 ~ 11.95",
+      "buy_range": "—",
+      "stop_loss": 10.8,
+      "position_action": "卖出区间到了，减400股",
+      "reason": "价格进入卖出区间，卖在计划内就是合格，不追求最高点",
+      "discipline_note": "卖飞不可怕，坐电梯才伤。先卖。"
+    },
+    {
+      "symbol": "601689",
+      "name": "拓普集团",
+      "price": 68.74,
+      "type": "📥买入信号",
+      "label": "📥买入: 68.5~70 | 回踩到MA5下方，买入区间",
+      "pos": "观察-等待买入",
+      "change_pct": -3.31,
+      "conclusion": "买入区间已到，试错执行",
+      "trigger_signal": "📥买入: 68.5~70",
+      "sell_range": "—",
+      "buy_range": "68.50 ~ 70.00",
+      "stop_loss": 64.0,
+      "position_action": "回踩到MA5下方，买入区间",
+      "reason": "价格进入买入区间，等待信号确认，小仓介入",
+      "discipline_note": "买入信号不是满仓理由，先试错，错了立刻走。"
+    },
+    {
+      "symbol": "002600",
+      "name": "领益智造",
+      "price": 15.8,
+      "type": "📥买入信号",
+      "label": "📥买入: 15.4~15.9 | 回踩MA5下方或附近低吸，今日低15.47有效支撑",
+      "pos": "关注中-等大盘低吸",
+      "change_pct": -0.13,
+      "conclusion": "买入区间已到，试错执行",
+      "trigger_signal": "📥买入: 15.4~15.9",
+      "sell_range": "—",
+      "buy_range": "15.40 ~ 15.90",
+      "stop_loss": 14.8,
+      "position_action": "回踩MA5下方或附近低吸，今日低15.47有效支撑",
+      "reason": "价格进入买入区间，等待信号确认，小仓介入",
+      "discipline_note": "买入信号不是满仓理由，先试错，错了立刻走。"
+    },
+    {
+      "symbol": "601688",
+      "name": "华泰证券",
+      "price": 18.54,
+      "type": "📥买入信号",
+      "label": "📥买入: 18.3~18.6 | 回踩MA20企稳，尾盘买阴线",
+      "pos": "观察-等待拉升",
+      "change_pct": -0.8,
+      "conclusion": "买入区间已到，试错执行",
+      "trigger_signal": "📥买入: 18.3~18.6",
+      "sell_range": "—",
+      "buy_range": "18.30 ~ 18.60",
+      "stop_loss": 17.5,
+      "position_action": "回踩MA20企稳，尾盘买阴线",
+      "reason": "价格进入买入区间，等待信号确认，小仓介入",
+      "discipline_note": "买入信号不是满仓理由，先试错，错了立刻走。"
+    }
+  ]
+}

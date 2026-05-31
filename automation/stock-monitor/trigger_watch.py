@@ -54,6 +54,8 @@ def is_new_alert(a, state):
     return False
 
 
+FEISHU_WEBHOOK = "https://open.feishu.cn/open-apis/bot/v2/hook/dec20a90-d24b-42d0-8f55-c77e2e37c818"
+
 def build_feishu_card(alerts):
     """Build execution-focused Feishu card matching new template"""
     all_sell = all("卖" in a.get("type", "") for a in alerts)

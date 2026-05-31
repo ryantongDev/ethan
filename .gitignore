@@ -1,0 +1,29 @@
+# OpenClaw auto-generated
+.openclaw/
+.mx-claw-workspace/
+state/
+memory/*.md
+.memory/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+
+# AI agent workspaces
+codex/
+gemini/
+
+# Temp files
+*.swp
+*.swo
+*~
+
+# Cache and state
+automation/stock-monitor/.cache/
+automation/stock-monitor/__pycache__/
+automation/stock-monitor/alert_state.json
+automation/stock-monitor/alerts.json
+automation/stock-monitor/pending_interaction.json

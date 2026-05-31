@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
+  <script src="/ethan/lang.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>升级计数器</title>
@@ -59,13 +60,13 @@
 </head>
 <body>
   <div class="card">
-    <h1>升级计数器</h1>
-    <div class="sub">实用版 + 好看版，支持步进、自定义、自动保存</div>
+    <h1 data-i18n="counter_title">升级计数器</h1>
+    <div class="sub" data-i18n="counter_sub">实用版 + 好看版，支持步进、自定义、自动保存</div>
     <div class="num" id="count">0</div>
 
     <div class="row3">
       <button class="minus" id="minus5">-5</button>
-      <button class="soft" id="reset">重置</button>
+      <button class="soft" id="reset" data-i18n="counter_reset">重置</button>
       <button class="plus" id="plus5">+5</button>
     </div>
 
@@ -76,7 +77,7 @@
 
     <div class="row">
       <input id="step" type="number" value="10" />
-      <button class="copy" id="copy">复制结果</button>
+      <button class="copy" id="copy" data-i18n="counter_copy">复制结果</button>
     </div>
 
     <div class="row">
