@@ -471,15 +471,18 @@ window.addEventListener("load", function(){
       if(o.spike){die();return;}
       // block: land on top if falling from above
       if(o.death && !o.top){die();return;}
-      // any non-spike, non-death block: only kill on spike/death
-      // landing from above = stand on it; side collision = harmless skip
-      // (this fixes chain blocks & floating blocks where the cube can't
-      //  stand on consecutive blocks because of timing mismatch)
-      var prevBottom=cube.y-cube.vy+cube.h;
-      if(!o.top && prevBottom<=oy1+6 && cube.y+cube.h<oy2){
-        cube.y=oy1-cube.h;
-        cube.vy=0;
-        cube.grounded=true;
+      // any non-spike, non-death block: only kill on spike/death.
+      // Landing: if the cube's bottom is near the block's top, stand on it.
+      // (prevBottom check fails when jumping from ground to floating block
+      //  because ground is much lower than floating block top)
+      if(!o.top){
+        // cube bottom is at or just above block top → landing
+        var cubeBottom=cube.y+cube.h;
+        if(cubeBottom>=oy1-4 && cubeBottom<=oy1+10 && cube.vy>=0){
+          cube.y=oy1-cube.h;
+          cube.vy=0;
+          cube.grounded=true;
+        }
       }
       // side hit on regular block = skip, don't kill
       continue;
