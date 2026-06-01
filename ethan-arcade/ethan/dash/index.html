@@ -471,26 +471,18 @@ window.addEventListener("load", function(){
       if(o.spike){die();return;}
       // block: land on top if falling from above
       if(o.death && !o.top){die();return;}
-      // floating/chain regular blocks: allow side collision (don't kill)
-      if(o.float || o.chain){
-        // only land on top if coming from above
-        var prevBottom=cube.y-cube.vy+cube.h;
-        if(!o.top && prevBottom<=oy1+6 && cube.y+cube.h<oy2){
-          cube.y=oy1-cube.h;
-          cube.vy=0;
-          cube.grounded=true;
-        }
-        // side hit = harmless push-through, don't kill
-        continue;
-      }
+      // any non-spike, non-death block: only kill on spike/death
+      // landing from above = stand on it; side collision = harmless skip
+      // (this fixes chain blocks & floating blocks where the cube can't
+      //  stand on consecutive blocks because of timing mismatch)
       var prevBottom=cube.y-cube.vy+cube.h;
       if(!o.top && prevBottom<=oy1+6 && cube.y+cube.h<oy2){
         cube.y=oy1-cube.h;
         cube.vy=0;
         cube.grounded=true;
-      }else if(cube.grounded && jumpTime>0){jumpTime=0;}else{
-        die();return;
       }
+      // side hit on regular block = skip, don't kill
+      continue;
     }
   }
 
