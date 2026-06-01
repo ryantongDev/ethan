@@ -471,6 +471,18 @@ window.addEventListener("load", function(){
       if(o.spike){die();return;}
       // block: land on top if falling from above
       if(o.death && !o.top){die();return;}
+      // floating/chain regular blocks: allow side collision (don't kill)
+      if(o.float || o.chain){
+        // only land on top if coming from above
+        var prevBottom=cube.y-cube.vy+cube.h;
+        if(!o.top && prevBottom<=oy1+6 && cube.y+cube.h<oy2){
+          cube.y=oy1-cube.h;
+          cube.vy=0;
+          cube.grounded=true;
+        }
+        // side hit = harmless push-through, don't kill
+        continue;
+      }
       var prevBottom=cube.y-cube.vy+cube.h;
       if(!o.top && prevBottom<=oy1+6 && cube.y+cube.h<oy2){
         cube.y=oy1-cube.h;
